@@ -19,6 +19,7 @@ const CreateOrderPage = () => {
 
   return (
     <div>
+      <div style={{ paddingTop: '30px' }}></div>
       <h1>Создать новый заказ</h1>
       <form onSubmit={handleSubmit}>
         <label>
@@ -26,6 +27,7 @@ const CreateOrderPage = () => {
           <input value={title} onChange={(e) => setTitle(e.target.value)} />
         </label>
         <br />
+        <div style={{ paddingTop: '30px' }}></div>
         <label>
           Описание:
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} />

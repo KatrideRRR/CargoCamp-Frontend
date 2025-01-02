@@ -1,43 +1,36 @@
 import React, { useEffect, useState } from 'react';
+import API from '../utils/api';
 import { fetchOrders } from '../utils/api';
 
+
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        const data = await fetchOrders();
-        setOrders(data);
-      } catch (error) {
-        console.error('Ошибка при загрузке заказов:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const response = await API.get('/orders');
+                setOrders(response.data);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        };
+        fetchOrders();
+    }, []);
 
-    loadOrders();
-  }, []);
-
-  if (loading) {
-    return <p>Загрузка заказов...</p>;
-  }
-
-  return (
-    <div>
-      <h1>Список заказов</h1>
-      <ul>
-        {orders.map((order) => (
-          <li key={order.id}>
-            <h3>{order.title}</h3>
-            <p>{order.description}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+    return (
+        <div>
+            <div style={{paddingTop: '30px'}}></div>
+            <h1>Orders</h1>
+            <ul>
+                {orders.map((order) => (
+                    <li key={order.id}>
+                        {order.description}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 };
 
 export default OrdersPage;
-
