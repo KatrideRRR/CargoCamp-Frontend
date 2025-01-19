@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {useNavigate} from "react-router-dom";
 import '../styles/OrdersPage.css'; // Импорт стилей
 
 const ActiveOrdersPage = () => {
     const [activeOrders, setActiveOrders] = useState([]); // Состояние для хранения активных заказов
     const [error, setError] = useState(null); // Состояние для ошибок
+    const navigate = useNavigate();
 
     useEffect(() => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Вы не авторизованы! Пожалуйста, войдите в систему.');
+            navigate('/login');
+        }
         const fetchActiveOrders = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/orders/active-orders');
@@ -18,7 +25,7 @@ const ActiveOrdersPage = () => {
         };
 
         fetchActiveOrders();
-    }, []);
+    }, [navigate]);
 
     if (error) {
         return <div className="error-message">{error}</div>; // Отображение ошибки

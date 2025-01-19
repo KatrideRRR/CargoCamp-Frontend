@@ -9,7 +9,6 @@ import CreateOrderPage from './pages/CreateOrderPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
-import OrderDetailsPage from './pages/OrderDetailsPage';
 import Navbar from './components/Navbar';
 import SpecialOrdersPage from './pages/SpecialOrdersPage';
 import ActiveOrdersPage from './pages/ActiveOrdersPage';
@@ -19,9 +18,6 @@ import MassagePage from './pages/MassagePage';
 import {AuthProvider} from "./utils/authContext";
 import { UserProvider } from './utils/userContext';
 import PrivateRoute from './utils/PrivateRoute';
-
-
-
 
 const App = () => {
     return (
@@ -37,9 +33,8 @@ const App = () => {
                 <Route path="/profile" element=
                     {<PrivateRoute><ProfilePage /></PrivateRoute>}/>
                 <Route path="/special-orders" element={<SpecialOrdersPage />} />
-                <Route path="/active-orders" element={<ActiveOrdersPage />} />
+                <Route path="/active-orders" element={<ActiveOrdersPage />}/>
                 <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/orders/:id" element={<OrderDetailsPage />} />
                 <Route path="/create-order" element={<CreateOrderPage />} />
                 <Route path="/massage/:id" element={<ChatDetailsPage />} />
             </Routes>
@@ -48,10 +43,8 @@ const App = () => {
         </UserProvider>
         </AuthProvider>
 
-
 );
 };
-
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);

@@ -10,7 +10,7 @@ const HomePage = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/orders");
+                const response = await axios.get("http://localhost:5000/api/orders/all");
                 setOrders(response.data);
                 console.log(response.data); // Убедитесь, что данные получены
             } catch (error) {

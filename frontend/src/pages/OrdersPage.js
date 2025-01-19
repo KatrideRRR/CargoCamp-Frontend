@@ -19,9 +19,9 @@ const OrdersPage = () => {
                 setError(err.response?.data?.message || 'Ошибка загрузки заказов');
             }
         };
-        if (currentUser) {
+
             fetchOrders();
-        }
+
     }, [currentUser]);
 
     const handleTakeOrder = async (orderId) => {
