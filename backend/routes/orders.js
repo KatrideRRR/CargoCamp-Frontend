@@ -3,11 +3,13 @@ const router = express.Router();
 const NodeGeocoder = require('node-geocoder');
 const { Order, User } = require('../models');
 const authenticateToken = require('../middlewares/authenticateToken');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 // Add a new order
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
     const { address, description, workTime, proposedSum } = req.body;
     const userId = req.user.id;
 
