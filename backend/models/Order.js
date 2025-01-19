@@ -33,10 +33,14 @@ module.exports = (sequelize) => {
             userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+                references: {
+                    model: 'Users',
+                    key: 'id',
+                },
             },
             status: {
-                type: DataTypes.ENUM('active', 'in_progress', 'completed'),
-                defaultValue: 'active', // По умолчанию новый заказ активен
+                type: DataTypes.ENUM('pending', 'active', 'completed'),
+                defaultValue: 'pending', // По умолчанию новый заказ активен
             },
             executorId: {
                 type: DataTypes.INTEGER,
