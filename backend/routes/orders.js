@@ -4,6 +4,7 @@ const NodeGeocoder = require('node-geocoder');
 const { Order, User } = require('../models');
 const authenticateToken = require('../middlewares/authenticateToken');
 const multer = require('multer');
+const {Op} = require("sequelize");
 const upload = multer({ dest: 'uploads/' });
 
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
@@ -41,23 +42,32 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
 router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
-            include: { model: User, as: 'user', attributes: ['id', 'username', 'email'] },
+            where: {
+                status: { [Op.notIn]: ['active', 'complete'] },
+            },
         });
-        res.status(200).json(orders);
+        res.json(orders);
     } catch (error) {
-        console.error('Error fetching orders:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Ошибка при получении заказов:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
 
 // Get active orders
-router.get('/active-orders', async (req, res) => {
+router.get('/active-orders', authenticateToken , async (req, res) => {
     try {
-        const activeOrders = await Order.findAll({ where: { status: 'active' } });
-        res.status(200).json(activeOrders);
+        const userId = req.user.id; // ID текущего авторизованного пользователя
+        const activeOrders = await Order.findAll({
+            where: {
+                status: 'active', // Фильтр по статусу "active"
+                executorId: userId, // Только заказы, привязанные к текущему пользователю
+            },
+        });
+
+        res.json(activeOrders);
     } catch (error) {
-        console.error('Error fetching active orders:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Ошибка при получении активных заказов:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
 
