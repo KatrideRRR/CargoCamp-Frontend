@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import axios from "axios";
-import MarkerComponent from "../components/MarkerComponent";
+import React, { useEffect, useState } from 'react';
+import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
+import axios from 'axios';
 
 const HomePage = () => {
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState([]); // Список заказов
 
     useEffect(() => {
+        // Получаем заказы с сервера
         const fetchOrders = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/orders/all");
-                setOrders(response.data);
-                console.log(response.data); // Убедитесь, что данные получены
+                const response = await axios.get('http://localhost:5000/api/orders/all', {
+                    params: { status: 'pending' }, // Фильтруем заказы по статусу
+                });                const ordersWithCoordinates = response.data.filter(order => order.coordinates); // Фильтруем только заказы с координатами
+                setOrders(ordersWithCoordinates);
             } catch (error) {
-                console.error("Ошибка при загрузке заказов:", error);
+                console.error('Ошибка загрузки заказов:', error);
             }
         };
 
@@ -22,23 +22,28 @@ const HomePage = () => {
     }, []);
 
     return (
-        <div>
-            <div style={{ paddingTop: "30px" }}></div>
-            <h1 style={{ textAlign: "center", margin: "20px 0" }}>Home Page</h1>
-            <MapContainer
-                center={[44.9572, 34.1108]}
-                zoom={13}
-                style={{ height: "80vh", width: "100%" }}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution="&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
-                />
-                {orders.map((order) => (
-                    <MarkerComponent key={order.id} order={order} />
-                ))}
-            </MapContainer>
-        </div>
+        <YMaps query={{ apikey: "bf97867b-5ffb-4fc4-9fd5-8997874b300e" }}>
+            <div style={{ width: '100%', height: '100vh' }}>
+                <Map
+                    defaultState={{ center: [44.9572, 34.1108], zoom: 10 }}
+                    style={{ width: '100%', height: '100%' }}
+                >
+                    {orders.map((order, index) => {
+                        const [latitude, longitude] = order.coordinates.split(',').map(Number);
+                        return (
+                            <Placemark
+                                key={index}
+                                geometry={[latitude, longitude]}
+                                properties={{
+                                    hintContent: `Заказ #${order.id}`,
+                                    balloonContent: order.description,
+                                }}
+                            />
+                        );
+                    })}
+                </Map>
+            </div>
+        </YMaps>
     );
 };
 

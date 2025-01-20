@@ -11,7 +11,7 @@ const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 // Add a new order
 router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
-    const { address, description, workTime, proposedSum } = req.body;
+    const { address, description, workTime, proposedSum, coordinates } = req.body;
     const userId = req.user.id;
 
     try {
@@ -29,6 +29,7 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
             proposedSum,
             latitude,
             longitude,
+            coordinates,
         });
 
         res.status(201).json(newOrder);

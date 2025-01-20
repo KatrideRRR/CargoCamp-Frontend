@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@pbe/react-yandex-maps": "^1.2.5",
     "@react-leaflet/core": "^2.1.0",
     "axios": "^1.7.9",
     "babel-jest": "^24.8.0",

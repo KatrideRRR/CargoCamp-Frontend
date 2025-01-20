@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
 
 function CreateOrderPage({ currentUserId }) {
     const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ function CreateOrderPage({ currentUserId }) {
     });
 
     const [error, setError] = useState('');
+    const [markerPosition, setMarkerPosition] = useState(null); // Для хранения координат маркера
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,6 +24,28 @@ function CreateOrderPage({ currentUserId }) {
         }
     }, [navigate]);
 
+    const handleAddressChange = async (e) => {
+        const address = e.target.value;
+        setFormData({ ...formData, address });
+
+        if (address.length > 3) {
+            try {
+                const response = await fetch(
+                    `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(address)}&format=json`
+                );
+                const data = await response.json();
+                const coordinates =
+                    data.response.GeoObjectCollection.featureMember[0]?.GeoObject.Point.pos.split(' ').map(Number);
+
+                if (coordinates) {
+                    setMarkerPosition([coordinates[1], coordinates[0]]); // Переключение порядка координат
+                }
+            } catch (err) {
+                console.error('Ошибка геокодирования:', err);
+            }
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const form = new FormData();
@@ -31,6 +55,7 @@ function CreateOrderPage({ currentUserId }) {
         form.append('workTime', formData.workTime);
         form.append('photo', formData.photo);
         form.append('proposedSum', formData.proposedSum);
+        form.append('coordinates', markerPosition.join(','));
 
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -46,7 +71,6 @@ function CreateOrderPage({ currentUserId }) {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,
                 },
-
             });
             alert('Заказ успешно создан');
             navigate('/orders'); // Перенаправление после успешного создания заказа
@@ -57,80 +81,88 @@ function CreateOrderPage({ currentUserId }) {
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.formContainer}>
-                <h1 style={styles.title}>Создать заказ</h1>
-                {error && <p style={styles.errorText}>{error}</p>}
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Описание работы</label>
-                        <textarea
-                            style={styles.textarea}
-                            placeholder="Введите описание работы"
-                            value={formData.description}
-                            onChange={(e) =>
-                                setFormData({ ...formData, description: e.target.value })
-                            }
-                            required
-                        />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Адрес</label>
-                        <input
-                            style={styles.input}
-                            type="text"
-                            placeholder="Введите адрес"
-                            value={formData.address}
-                            onChange={(e) =>
-                                setFormData({ ...formData, address: e.target.value })
-                            }
-                            required
-                        />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Дата и время выполнения</label>
-                        <input
-                            style={styles.input}
-                            type="datetime-local"
-                            value={formData.workTime}
-                            onChange={(e) =>
-                                setFormData({ ...formData, workTime: e.target.value })
-                            }
-                            required
-                        />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Фото</label>
-                        <input
-                            style={styles.input}
-                            type="file"
-                            onChange={(e) =>
-                                setFormData({ ...formData, photo: e.target.files[0] })
-                            }
-                         //   required
-                        />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Предложенная сумма</label>
-                        <input
-                            style={styles.input}
-                            type="number"
-                            placeholder="Введите сумму"
-                            value={formData.proposedSum}
-                            onChange={(e) =>
-                                setFormData({ ...formData, proposedSum: e.target.value })
-                            }
-                            required
-                        />
-                    </div>
-                    <button type="submit" style={styles.submitButton}>
-                        Создать заказ
-                    </button>
-                </form>
+        <YMaps query={{ apikey: 'bf97867b-5ffb-4fc4-9fd5-8997874b300e\n' }}>
+            <div style={styles.container}>
+                <div style={styles.formContainer}>
+                    <h1 style={styles.title}>Создать заказ</h1>
+                    {error && <p style={styles.errorText}>{error}</p>}
+                    <form onSubmit={handleSubmit} style={styles.form}>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Описание работы</label>
+                            <textarea
+                                style={styles.textarea}
+                                placeholder="Введите описание работы"
+                                value={formData.description}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, description: e.target.value })
+                                }
+                                required
+                            />
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Адрес</label>
+                            <input
+                                style={styles.input}
+                                type="text"
+                                placeholder="Введите адрес"
+                                value={formData.address}
+                                onChange={handleAddressChange}
+                                required
+                            />
+                        </div>
+                        <div style={styles.mapContainer}>
+                            <Map
+                                defaultState={{ center: [44.9572, 34.1108], zoom: 10 }}
+                                style={{ width: '100%', height: '300px' }}
+                            >
+                                {markerPosition && <Placemark geometry={markerPosition} />}
+                            </Map>
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Дата и время выполнения</label>
+                            <input
+                                style={styles.input}
+                                type="datetime-local"
+                                value={formData.workTime}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, workTime: e.target.value })
+                                }
+                                required
+                            />
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Фото</label>
+                            <input
+                                style={styles.input}
+                                type="file"
+                                onChange={(e) =>
+                                    setFormData({ ...formData, photo: e.target.files[0] })
+                                }
+                            />
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Предложенная сумма</label>
+                            <input
+                                style={styles.input}
+                                type="number"
+                                placeholder="Введите сумму"
+                                value={formData.proposedSum}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, proposedSum: e.target.value })
+                                }
+                                required
+                            />
+                        </div>
+                        <button type="submit" style={styles.submitButton}>
+                            Создать заказ
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+        </YMaps>
     );
 }
+
 
 const styles = {
     container: {
@@ -196,6 +228,11 @@ const styles = {
         color: 'red',
         fontSize: '14px',
         marginBottom: '10px',
+    },
+    mapContainer: {
+        width: '100%',
+        height: '300px',
+        marginBottom: '20px',
     },
 };
 

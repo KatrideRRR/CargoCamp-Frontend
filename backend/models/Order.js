@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
             },
             description: {
                 type: DataTypes.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             workTime: {
                 type: DataTypes.DATE,
@@ -28,9 +28,13 @@ module.exports = (sequelize) => {
             },
             proposedSum: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: true,
             },
             photoUrl: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            coordinates: {
                 type: DataTypes.STRING,
                 allowNull: true,
             },
@@ -44,7 +48,7 @@ module.exports = (sequelize) => {
             },
             status: {
                 type: DataTypes.ENUM('pending', 'active', 'completed'),
-                defaultValue: 'pending', // По умолчанию новый заказ активен
+                defaultValue: 'pending',
             },
             executorId: {
                 type: DataTypes.INTEGER,
