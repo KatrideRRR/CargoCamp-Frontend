@@ -43,7 +43,7 @@ router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
             where: {
-                status: { [Op.notIn]: ['active', 'complete'] },
+                status: 'pending', // Фильтр по статусу "active"
             },
         });
         res.json(orders);
@@ -116,5 +116,29 @@ router.post('/:id/take', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// Завершение заказа
+router.post('/:orderId/complete', async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        // Поиск заказа по ID
+        const order = await Order.findByPk(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Заказ не найден' });
+        }
+
+        // Обновление статуса заказа
+        order.status = 'completed';
+        await order.save();
+
+        res.status(200).json({ message: 'Заказ успешно завершен', order });
+    } catch (error) {
+        console.error('Ошибка при завершении заказа:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 
 module.exports = router;

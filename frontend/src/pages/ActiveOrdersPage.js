@@ -29,6 +29,23 @@ const ActiveOrdersPage = () => {
         fetchActiveOrders();
     }, [navigate]);
 
+    const handleCompleteOrder = async (orderId) => {
+        const token = localStorage.getItem('authToken');
+        try {
+            await axios.post(
+                `http://localhost:5000/api/orders/${orderId}/complete`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Заказ завершен!');
+            setOrders(orders.filter((order) => order.id !== orderId));
+        } catch (err) {
+            console.error('Ошибка при завершении заказа:', err);
+            alert('Не удалось завершить заказ.');
+        }
+    };
+
+
     if (error) {
         return <div className="error-message">{error}</div>; // Отображение ошибки
     }
@@ -43,8 +60,20 @@ const ActiveOrdersPage = () => {
                             <li key={order.id} className="order-card">
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
                                 <p className="order-status"><strong>Адрес:</strong> {order.address}</p>
-                                <button className="take-order-button">Завершить заказ</button>
+                                <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                <div className="action-buttons">
+                                    <button className="call-button">Позвонить</button>
+                                    <button className="message-button">Сообщение</button>
+                                    <button className="route-button">Маршрут</button>
+                                    <button
+                                        className="complete-button"
+                                        onClick={() => handleCompleteOrder(order.id)}
+                                    >
+                                        Завершить
+                                    </button>
+                                </div>
                             </li>
+
                         ))}
                     </ul>
                 ) : (

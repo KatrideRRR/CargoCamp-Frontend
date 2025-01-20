@@ -26,6 +26,10 @@ module.exports = (sequelize) => {
                 type: DataTypes.DATE,
                 allowNull: true,
             },
+            proposedSum: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
             photoUrl: {
                 type: DataTypes.STRING,
                 allowNull: true,
@@ -46,6 +50,7 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },
+
         },
         {
             sequelize,

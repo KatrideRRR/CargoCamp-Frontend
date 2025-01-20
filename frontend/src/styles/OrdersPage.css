@@ -94,3 +94,65 @@
     color: #8e8e93;
     margin-top: 20px;
 }
+
+/* Кнопки действий в ActiveOrdersPage */
+.orders-wrapper .action-buttons {
+    display: flex;
+    gap: 10px; /* Промежуток между кнопками */
+    margin-top: 10px;
+}
+
+/* Общий стиль для кнопок действий */
+.orders-wrapper .action-buttons button {
+    flex: 1; /* Равномерное распределение размера кнопок */
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Стиль для каждой кнопки */
+.orders-wrapper .call-button {
+    background-color: #28a745;
+}
+
+.orders-wrapper .call-button:hover {
+    background-color: #218838;
+}
+
+.orders-wrapper .message-button {
+    background-color: #17a2b8;
+}
+
+.orders-wrapper .message-button:hover {
+    background-color: #138496;
+}
+
+.orders-wrapper .route-button {
+    background-color: #ffc107;
+    color: #212529; /* Темный текст на желтом фоне */
+}
+
+.orders-wrapper .route-button:hover {
+    background-color: #e0a800;
+}
+
+.orders-wrapper .complete-button {
+    background-color: #dc3545;
+}
+
+.orders-wrapper .complete-button:hover {
+    background-color: #c82333;
+}
+
+.order-proposedSum {
+    font-size: 16px;
+    color: #4caf50; /* Зеленый цвет для цены */
+    margin: 8px 0;
+    font-weight: bold;
+}
+

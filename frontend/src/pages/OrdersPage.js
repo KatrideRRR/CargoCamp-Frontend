@@ -49,7 +49,8 @@ const OrdersPage = () => {
                         {orders.map((order) => (
                             <li className="order-card" key={order.id}>
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
-                                <p className="order-status"><strong>Статус:</strong> {order.status}</p>
+                                <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
+                                <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                 <button
                                     className="take-order-button"
                                     onClick={() => handleTakeOrder(order.id)}
