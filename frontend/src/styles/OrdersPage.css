@@ -1,12 +1,15 @@
 /* Общий контейнер страницы */
+/* Общий контейнер страницы */
 .orders-container {
-    padding: 20px;
+    padding: 80px 20px 80px; /* Увеличены отступы: 80px сверху и снизу */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background-color: #f2f2f7;
     min-height: 100vh;
     display: flex;
-    justify-content: center; /* Центрируем содержимое */
+    justify-content: center;
+    box-sizing: border-box; /* Учитывать отступы в расчетах высоты */
 }
+
 
 /* Ограничение ширины контента */
 .orders-wrapper {
@@ -155,4 +158,6 @@
     margin: 8px 0;
     font-weight: bold;
 }
+
+
 

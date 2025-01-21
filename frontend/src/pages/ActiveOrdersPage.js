@@ -53,11 +53,11 @@ const ActiveOrdersPage = () => {
     return (
         <div className="orders-container">
             <div className="orders-wrapper">
-                <h1 className="page-title">Ваши активные заказы</h1>
                 {orders.length > 0 ? (
                     <ul className="orders-list">
                         {orders.map((order) => (
                             <li key={order.id} className="order-card">
+                                <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
                                 <p className="order-status"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>

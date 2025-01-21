@@ -9,12 +9,37 @@ function CreateOrderPage({ currentUserId }) {
         address: '',
         workTime: '',
         photo: null,
-        proposedSum: ''
+        proposedSum: '',
+        type: ''
     });
+
+    const predefinedTypes = [
+        'вывоз мусора',
+        'переезд',
+        'электрик',
+        'плиточник',
+        'сантехник',
+    ];
 
     const [error, setError] = useState('');
     const [markerPosition, setMarkerPosition] = useState(null); // Для хранения координат маркера
     const navigate = useNavigate();
+    const [suggestions, setSuggestions] = useState([]);
+
+    const handleTypeInputChange = (value) => {
+        setFormData({ ...formData, type: value });
+
+        // Фильтруем список типов
+        const filteredSuggestions = predefinedTypes.filter((type) =>
+            type.toLowerCase().includes(value.toLowerCase())
+        );
+        setSuggestions(filteredSuggestions);
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        setFormData({ ...formData, type: suggestion });
+        setSuggestions([]); // Закрываем подсказки
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
@@ -56,6 +81,7 @@ function CreateOrderPage({ currentUserId }) {
         form.append('photo', formData.photo);
         form.append('proposedSum', formData.proposedSum);
         form.append('coordinates', markerPosition.join(','));
+        form.append('type', formData.type);
 
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -84,17 +110,42 @@ function CreateOrderPage({ currentUserId }) {
         <YMaps query={{ apikey: 'bf97867b-5ffb-4fc4-9fd5-8997874b300e\n' }}>
             <div style={styles.container}>
                 <div style={styles.formContainer}>
-                    <h1 style={styles.title}>Создать заказ</h1>
                     {error && <p style={styles.errorText}>{error}</p>}
                     <form onSubmit={handleSubmit} style={styles.form}>
                         <div style={styles.inputGroup}>
+
+                            <div style={{position: 'relative', ...styles.inputGroup}}>
+                                <label style={styles.label}>Тип заказа</label>
+                                <input
+                                    style={styles.input}
+                                    type="text"
+                                    value={formData.type}
+                                    onChange={(e) => handleTypeInputChange(e.target.value)}
+                                    placeholder="Введите тип заказа..."
+                                    required
+                                />
+                                {suggestions.length > 0 && (
+                                    <ul style={styles.suggestions}>
+                                        {suggestions.map((suggestion, index) => (
+                                            <li
+                                                key={index}
+                                                style={styles.suggestionItem}
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                            >
+                                                {suggestion}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+
                             <label style={styles.label}>Описание работы</label>
                             <textarea
                                 style={styles.textarea}
                                 placeholder="Введите описание работы"
                                 value={formData.description}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, description: e.target.value })
+                                    setFormData({...formData, description: e.target.value})
                                 }
                                 required
                             />
@@ -112,7 +163,7 @@ function CreateOrderPage({ currentUserId }) {
                         </div>
                         <div style={styles.mapContainer}>
                             <Map
-                                defaultState={{ center: [44.9572, 34.1108], zoom: 10 }}
+                                defaultState={{center: [44.9572, 34.1108], zoom: 10}}
                                 style={{ width: '100%', height: '300px' }}
                             >
                                 {markerPosition && <Placemark geometry={markerPosition} />}
@@ -233,6 +284,26 @@ const styles = {
         width: '100%',
         height: '300px',
         marginBottom: '20px',
+    },
+
+    suggestions: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        width: '100%',
+        maxHeight: '150px',
+        overflowY: 'auto',
+        background: '#fff',
+        border: '1px solid #ccc',
+        zIndex: 10,
+        listStyle: 'none',
+        margin: 0,
+        padding: '0',
+    },
+    suggestionItem: {
+        padding: '8px',
+        cursor: 'pointer',
+        borderBottom: '1px solid #ddd',
     },
 };
 

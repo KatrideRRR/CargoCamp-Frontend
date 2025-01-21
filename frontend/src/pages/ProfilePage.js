@@ -73,7 +73,6 @@ const ProfilePage = () => {
     return (
         <div style={styles.container}>
             <div style={styles.profileContainer}>
-                <h1 style={styles.title}>Профиль</h1>
                 <button onClick={handleLogout} style={styles.logoutButton}>
                     Выйти
                 </button>

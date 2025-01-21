@@ -11,7 +11,7 @@ const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 // Add a new order
 router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
-    const { address, description, workTime, proposedSum, coordinates } = req.body;
+    const { address, description, workTime, proposedSum, coordinates, type } = req.body;
     const userId = req.user.id;
 
     try {
@@ -30,6 +30,7 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
             latitude,
             longitude,
             coordinates,
+            type,
         });
 
         res.status(201).json(newOrder);
@@ -43,6 +44,7 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
 router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
+            attributes: ['id', 'address', 'description', 'workTime', 'proposedSum', 'coordinates', 'type'],
             where: {
                 status: 'pending', // Фильтр по статусу "active"
             },

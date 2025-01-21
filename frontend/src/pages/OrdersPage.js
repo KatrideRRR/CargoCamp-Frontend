@@ -13,6 +13,7 @@ const OrdersPage = () => {
             try {
                 const response = await axiosInstance.get('/orders/all');
                 setOrders(response.data);
+                console.log(response.data);
             } catch (err) {
                 setError(err.response?.data?.message || 'Ошибка загрузки заказов');
             }
@@ -38,16 +39,14 @@ const OrdersPage = () => {
         return <div className="error-message">Ошибка: {error}</div>;
     }
 
-
-
     return (
         <div className="orders-container">
             <div className="orders-wrapper">
-                <h1 className="page-title">Доступные заказы</h1>
                 {orders.length > 0 ? (
                     <ul className="orders-list">
                         {orders.map((order) => (
                             <li className="order-card" key={order.id}>
+                                <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
                                 <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>

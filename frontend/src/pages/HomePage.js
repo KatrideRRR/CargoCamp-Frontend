@@ -10,14 +10,14 @@ const HomePage = () => {
         const fetchOrders = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/orders/all', {
-                    params: { status: 'pending' }, // Фильтруем заказы по статусу
-                });                const ordersWithCoordinates = response.data.filter(order => order.coordinates); // Фильтруем только заказы с координатами
+                    params: { status: 'pending' },
+                });
+                const ordersWithCoordinates = response.data.filter(order => order.coordinates); // Фильтруем только заказы с координатами
                 setOrders(ordersWithCoordinates);
             } catch (error) {
                 console.error('Ошибка загрузки заказов:', error);
             }
         };
-
         fetchOrders();
     }, []);
 
@@ -27,16 +27,29 @@ const HomePage = () => {
                 <Map
                     defaultState={{ center: [44.9572, 34.1108], zoom: 10 }}
                     style={{ width: '100%', height: '100%' }}
+                    modules={['geoObject.addon.balloon']} // Подключение модуля для балунов
                 >
                     {orders.map((order, index) => {
-                        const [latitude, longitude] = order.coordinates.split(',').map(Number);
+                        const coordinates = order.coordinates?.split(',').map(Number); // Проверка координат
+                        if (!coordinates || coordinates.length !== 2) return null;
+
                         return (
                             <Placemark
                                 key={index}
-                                geometry={[latitude, longitude]}
+                                geometry={coordinates} // Устанавливаем координаты
                                 properties={{
-                                    hintContent: `Заказ #${order.id}`,
-                                    balloonContent: order.description,
+                                    hintContent: `Заказ #${order.id}`, // Подсказка
+                                    balloonContent: `
+                                        <div style="font-size: 14px;">
+                                            <p><strong>Тип заказа:</strong> ${order.type || 'Не указан'}</p>
+                                            <p><strong>Сумма:</strong> ${order.proposedSum || 'Не указана'} ₽</p>
+                                        </div>
+                                    `,
+                                }}
+                                options={{
+                                    preset: 'islands#dotIcon', // Устанавливаем стиль
+                                    iconColor: '#007AFF', // Цвет маркера
+                                    openBalloonOnClick: true, // Активируем балуны
                                 }}
                             />
                         );
