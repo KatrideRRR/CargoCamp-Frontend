@@ -7,17 +7,22 @@ const router = express.Router();
 
 // Регистрация пользователя
 router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, phone, password } = req.body;
+
+    if (!phone || !password) {
+        return res.status(400).json({ error: 'Укажите номер телефона и пароль' });
+    }
+
     try {
-        const userExists = await User.findOne({ where: { email } });
+        const userExists = await User.findOne({ where: { phone } });
         if (userExists) {
-            return res.status(400).json({ message: 'Email already in use' });
+            return res.status(400).json({ message: 'Phone already in use' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ username, email, password: hashedPassword });
+        const newUser = await User.create({ username, phone, password: hashedPassword });
 
-        const token = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: newUser.id, phone: newUser.phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(201).json({ message: 'User registered', token });
     } catch (error) {
         console.error('Registration error:', error);
@@ -27,9 +32,9 @@ router.post('/register', async (req, res) => {
 
 // Вход пользователя
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ where: { phone } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -39,8 +44,8 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, user: { id: user.id, username: user.username, email: user.email, rating: user.rating || 5 } });
+        const token = jwt.sign({ id: user.id, phone: user.phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token, user: { id: user.id, username: user.username, phone: user.phone, rating: user.rating || 5 } });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -51,7 +56,7 @@ router.post('/login', async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
-            attributes: ['id', 'username', 'email', 'rating', 'createdAt'],
+            attributes: ['id', 'username', 'phone', 'rating', 'createdAt'],
         });
 
         if (!user) {
@@ -67,7 +72,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 
 // Обновление профиля пользователя
 router.put('/profile', authenticateToken, async (req, res) => {
-    const { username, email } = req.body;
+    const { username, phone } = req.body;
 
     try {
         const user = await User.findByPk(req.user.id);
@@ -76,18 +81,18 @@ router.put('/profile', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if (email && email !== user.email) {
-            const emailExists = await User.findOne({ where: { email } });
-            if (emailExists) {
-                return res.status(400).json({ message: 'Email already in use' });
+        if (phone && phone !== user.phone) {
+            const phoneExists = await User.findOne({ where: { phone } });
+            if (phoneExists) {
+                return res.status(400).json({ message: 'Phone already in use' });
             }
         }
 
         user.username = username || user.username;
-        user.email = email || user.email;
+        user.phone = phone || user.phone;
         await user.save();
 
-        res.json({ message: 'Profile updated', user: { id: user.id, username: user.username, email: user.email } });
+        res.json({ message: 'Profile updated', user: { id: user.id, username: user.username, phone: user.phone } });
     } catch (error) {
         console.error('Error updating profile:', error);
         res.status(500).json({ message: 'Server error' });

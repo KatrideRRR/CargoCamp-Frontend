@@ -82,10 +82,7 @@ const ProfilePage = () => {
                             <h2 style={styles.subtitle}>Имя пользователя:</h2>
                             <p style={styles.info}>{profile.username}</p>
                         </div>
-                        <div style={styles.section}>
-                            <h2 style={styles.subtitle}>Email:</h2>
-                            <p style={styles.info}>{profile.email}</p>
-                        </div>
+
                         <div style={styles.section}>
                             <h2 style={styles.subtitle}>Рейтинг:</h2>
                             <p style={styles.info}>{profile.rating || 'Нет рейтинга'}</p>

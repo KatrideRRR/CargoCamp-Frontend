@@ -62,7 +62,12 @@ const ActiveOrdersPage = () => {
                                 <p className="order-status"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                 <div className="action-buttons">
-                                    <button className="call-button">Позвонить</button>
+                                    <button
+                                        className="call-button"
+                                        onClick={() => window.open(`tel:${order.phone}`)}
+                                    >
+                                        Позвонить
+                                    </button>
                                     <button className="message-button">Сообщение</button>
                                     <button className="route-button">Маршрут</button>
                                     <button

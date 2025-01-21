@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -12,10 +12,10 @@ const RegisterPage = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/register', { username, email, password });
+            const response = await axios.post('http://localhost:5000/api/auth/register', { username, phone, password });
             const { token } = response.data;
-
             localStorage.setItem('authToken', token); // Сохраняем токен
+            alert('Пользователь успешно создан');
             navigate('/profile'); // Перенаправление на профиль
         } catch (err) {
             console.error(err);
@@ -41,12 +41,12 @@ const RegisterPage = () => {
                         />
                     </div>
                     <div style={styles.inputGroup}>
-                        <label htmlFor="email" style={styles.label}>Email:</label>
+                        <label htmlFor="phone" style={styles.label}>Телефон:</label>
                         <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            id="phone"
+                            type="phone"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                             required
                             style={styles.input}
                         />

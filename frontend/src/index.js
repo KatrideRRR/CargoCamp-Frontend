@@ -17,7 +17,6 @@ import ChatDetailsPage from './pages/ChatDetailsPage';
 import MassagePage from './pages/MassagePage';
 import {AuthProvider} from "./utils/authContext";
 import { UserProvider } from './utils/userContext';
-import PrivateRoute from './utils/PrivateRoute';
 
 const App = () => {
     return (
@@ -31,7 +30,7 @@ const App = () => {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element=
-                    {<PrivateRoute><ProfilePage /></PrivateRoute>}/>
+                    {<ProfilePage />}/>
                 <Route path="/special-orders" element={<SpecialOrdersPage />} />
                 <Route path="/active-orders" element={<ActiveOrdersPage />}/>
                 <Route path="/orders" element={<OrdersPage />} />

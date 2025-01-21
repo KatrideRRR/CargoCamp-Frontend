@@ -18,10 +18,14 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            email: {
+            phone: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
+                validate: {
+                    notEmpty: true,
+                    is: /^[0-9]{10,15}$/, // Допускаем номера от 10 до 15 цифр
+                },
             },
             password: {
                 type: DataTypes.STRING,

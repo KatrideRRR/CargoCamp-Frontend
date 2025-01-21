@@ -6,7 +6,7 @@ import { useUser } from '../utils/userContext';
 
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const response = await axios.post('http://localhost:5000/api/auth/login', { phone, password });
             const { token, user } = response.data;
             localStorage.setItem('authToken', token);
             login(token); // Сохраняем новый токен
@@ -37,12 +37,12 @@ const LoginPage = () => {
                 {error && <p style={styles.error}>{error}</p>}
                 <form onSubmit={handleLogin} style={styles.form}>
                     <div style={styles.inputGroup}>
-                        <label htmlFor="email" style={styles.label}>Email:</label>
+                        <label htmlFor="phone" style={styles.label}>Телефон:</label>
                         <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            id="phone"
+                            type="phone"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                             required
                             style={styles.input}
                         />

@@ -4,7 +4,6 @@ const NodeGeocoder = require('node-geocoder');
 const { Order, User } = require('../models');
 const authenticateToken = require('../middlewares/authenticateToken');
 const multer = require('multer');
-const {Op} = require("sequelize");
 const upload = multer({ dest: 'uploads/' });
 
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
@@ -79,8 +78,14 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const order = await Order.findByPk(id, {
-            include: { model: User, as: 'user', attributes: ['id', 'username', 'email'] },
+            include: { model: User, as: 'user', attributes: ['id', 'username', 'phone'] },
         });
+
+        if (order && order.executorId === currentUserId) {
+            return res.json({ ...order.toJSON(), phone: order.User.phone });
+        } else {
+            return res.status(403).json({ message: 'Доступ к номеру запрещен' });
+        }
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
