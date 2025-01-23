@@ -15,7 +15,7 @@ module.exports = (sequelize) => {
                 autoIncrement: true,
             },
             address: {
-                type: DataTypes.STRING,
+                type: DataTypes.STRING(255),
                 allowNull: false,
             },
             description: {

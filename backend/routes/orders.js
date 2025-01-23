@@ -18,6 +18,9 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
         if (!geoData.length) {
             return res.status(404).json({ message: 'Address not found' });
         }
+        if (!address) {
+            return res.status(400).json({ message: 'Адрес обязателен' });
+        }
 
         const { latitude, longitude } = geoData[0];
         const newOrder = await Order.create({
@@ -26,8 +29,6 @@ router.post('/', authenticateToken,upload.single('photo'), async (req, res) => {
             description,
             workTime,
             proposedSum,
-            latitude,
-            longitude,
             coordinates,
             type,
         });

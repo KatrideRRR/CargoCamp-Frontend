@@ -1,35 +1,53 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
-import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
+import { YMaps, Map, Placemark } from "@pbe/react-yandex-maps";
+import "../styles/CreateOrderPage.css";
 
 function CreateOrderPage({ currentUserId }) {
     const [formData, setFormData] = useState({
-        description: '',
-        address: '',
-        workTime: '',
+        description: "",
+        address: "",
+        workTime: null,
         photo: null,
-        proposedSum: '',
-        type: ''
+        proposedSum: "",
+        type: "",
     });
 
     const predefinedTypes = [
-        'вывоз мусора',
-        'переезд',
-        'электрик',
-        'плиточник',
-        'сантехник',
+        "Вывоз мусора",
+        "Переезд",
+        "Электрик",
+        "Плиточник",
+        "Сантехник",
+        "Грузчик"
     ];
-
-    const [error, setError] = useState('');
-    const [markerPosition, setMarkerPosition] = useState(null); // Для хранения координат маркера
+    const [error, setError] = useState("");
+    const [markerPosition, setMarkerPosition] = useState(null);
     const navigate = useNavigate();
     const [suggestions, setSuggestions] = useState([]);
+    const currentDate = new Date(); // Текущая дата и время
+
+    const getMinTime = (selectedDate) => {
+        if (!selectedDate || selectedDate.toDateString() === currentDate.toDateString()) {
+            // Если дата совпадает с сегодняшней или не выбрана, возвращаем текущее время
+            return new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate(),
+                currentDate.getHours(),
+                currentDate.getMinutes()
+            );
+        } else {
+            // Для других дат минимальное время — начало суток
+            return new Date(0, 0, 0, 0, 0, 0);
+        }
+    };
 
     const handleTypeInputChange = (value) => {
         setFormData({ ...formData, type: value });
-
-        // Фильтруем список типов
         const filteredSuggestions = predefinedTypes.filter((type) =>
             type.toLowerCase().includes(value.toLowerCase())
         );
@@ -38,16 +56,16 @@ function CreateOrderPage({ currentUserId }) {
 
     const handleSuggestionClick = (suggestion) => {
         setFormData({ ...formData, type: suggestion });
-        setSuggestions([]); // Закрываем подсказки
+        setSuggestions([]);
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem("authToken");
         if (!token) {
-            alert('Вы не авторизованы! Пожалуйста, войдите в систему.');
-            navigate('/login');
+            alert("Вы не авторизованы! Пожалуйста, войдите в систему.");
+            navigate("/login");
         }
-    }, [navigate]);
+    }, [navigate, formData.workTime]);
 
     const handleAddressChange = async (e) => {
         const address = e.target.value;
@@ -56,17 +74,21 @@ function CreateOrderPage({ currentUserId }) {
         if (address.length > 3) {
             try {
                 const response = await fetch(
-                    `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(address)}&format=json`
+                    `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(
+                        address
+                    )}&format=json`
                 );
                 const data = await response.json();
                 const coordinates =
-                    data.response.GeoObjectCollection.featureMember[0]?.GeoObject.Point.pos.split(' ').map(Number);
+                    data.response.GeoObjectCollection.featureMember[0]?.GeoObject.Point.pos
+                        .split(" ")
+                        .map(Number);
 
                 if (coordinates) {
-                    setMarkerPosition([coordinates[1], coordinates[0]]); // Переключение порядка координат
+                    setMarkerPosition([coordinates[1], coordinates[0]]);
                 }
             } catch (err) {
-                console.error('Ошибка геокодирования:', err);
+                console.error("Ошибка геокодирования:", err);
             }
         }
     };
@@ -74,86 +96,89 @@ function CreateOrderPage({ currentUserId }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const form = new FormData();
-        form.append('userId', currentUserId);
-        form.append('description', formData.description);
-        form.append('address', formData.address);
-        form.append('workTime', formData.workTime);
-        form.append('photo', formData.photo);
-        form.append('proposedSum', formData.proposedSum);
-        form.append('coordinates', markerPosition.join(','));
-        form.append('type', formData.type);
+        form.append("userId", currentUserId);
+        form.append("description", formData.description);
+        form.append("address", formData.address);
+        form.append("workTime", formData.workTime);
+        form.append("photo", formData.photo);
+        form.append("proposedSum", formData.proposedSum);
+        form.append("coordinates", markerPosition.join(","));
+        form.append("type", formData.type);
 
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem("authToken");
         if (!token) {
-            setError('Вы не авторизованы! Пожалуйста, войдите в систему.');
-            console.error('Токен отсутствует в localStorage');
+            setError("Вы не авторизованы! Пожалуйста, войдите в систему.");
             return;
         }
 
         try {
-            console.log('Токен:', token);
-            await axios.post('http://localhost:5000/api/orders', form, {
+            await axios.post("http://localhost:5000/api/orders/", form, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${token}`,
                 },
             });
-            alert('Заказ успешно создан');
-            navigate('/orders'); // Перенаправление после успешного создания заказа
+            alert("Заказ успешно создан");
+            navigate("/orders");
         } catch (err) {
-            console.error('Ошибка при создании заказа:', err);
-            setError('Не удалось создать заказ. Попробуйте снова.');
+            console.error("Ошибка при создании заказа:", err);
+            setError("Не удалось создать заказ. Попробуйте снова.");
         }
     };
 
+    const handleDescriptionChange = (e) => {
+        const textarea = e.target;
+        textarea.style.height = "auto"; // Сброс высоты
+        textarea.style.height = `${textarea.scrollHeight}px`; // Установка высоты на основе контента
+        setFormData({ ...formData, description: textarea.value });
+    };
+
     return (
-        <YMaps query={{ apikey: 'bf97867b-5ffb-4fc4-9fd5-8997874b300e\n' }}>
-            <div style={styles.container}>
-                <div style={styles.formContainer}>
-                    {error && <p style={styles.errorText}>{error}</p>}
-                    <form onSubmit={handleSubmit} style={styles.form}>
-                        <div style={styles.inputGroup}>
-
-                            <div style={{position: 'relative', ...styles.inputGroup}}>
-                                <label style={styles.label}>Тип заказа</label>
-                                <input
-                                    style={styles.input}
-                                    type="text"
-                                    value={formData.type}
-                                    onChange={(e) => handleTypeInputChange(e.target.value)}
-                                    placeholder="Введите тип заказа..."
-                                    required
-                                />
-                                {suggestions.length > 0 && (
-                                    <ul style={styles.suggestions}>
-                                        {suggestions.map((suggestion, index) => (
-                                            <li
-                                                key={index}
-                                                style={styles.suggestionItem}
-                                                onClick={() => handleSuggestionClick(suggestion)}
-                                            >
-                                                {suggestion}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-
-                            <label style={styles.label}>Описание работы</label>
-                            <textarea
-                                style={styles.textarea}
-                                placeholder="Введите описание работы"
-                                value={formData.description}
-                                onChange={(e) =>
-                                    setFormData({...formData, description: e.target.value})
-                                }
+        <YMaps query={{ apikey: "bf97867b-5ffb-4fc4-9fd5-8997874b300e" }}>
+            <div className="container">
+                <div className="form-container">
+                    {error && <p className="error-text">{error}</p>}
+                    <form onSubmit={handleSubmit} className="form">
+                        <div className="input-group">
+                            <label className="label">Тип заказа</label>
+                            <input
+                                className="input"
+                                type="text"
+                                value={formData.type}
+                                onChange={(e) => handleTypeInputChange(e.target.value)}
+                                placeholder="Введите тип заказа..."
                                 required
                             />
+                            {suggestions.length > 0 && (
+                                <ul className="suggestions">
+                                    {suggestions.map((suggestion, index) => (
+                                        <li
+                                            key={index}
+                                            className="suggestion-item"
+                                            onClick={() => handleSuggestionClick(suggestion)}
+                                        >
+                                            {suggestion}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Адрес</label>
+
+                        <div className="input-group">
+                            <label className="label">Описание работы</label>
+                            <textarea
+                                className="textarea"
+                                placeholder="Введите описание работы"
+                                value={formData.description}
+                                onChange={handleDescriptionChange}
+                                rows="3" // Начальная высота
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="label">Адрес</label>
                             <input
-                                style={styles.input}
+                                className="input"
                                 type="text"
                                 placeholder="Введите адрес"
                                 value={formData.address}
@@ -161,50 +186,67 @@ function CreateOrderPage({ currentUserId }) {
                                 required
                             />
                         </div>
-                        <div style={styles.mapContainer}>
+
+                        <div className="map-container">
                             <Map
                                 defaultState={{center: [44.9572, 34.1108], zoom: 10}}
-                                style={{ width: '100%', height: '300px' }}
+                                style={{width: "100%", height: "300px"}}
                             >
-                                {markerPosition && <Placemark geometry={markerPosition} />}
+                                {markerPosition && <Placemark geometry={markerPosition}/>}
                             </Map>
                         </div>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Дата и время выполнения</label>
-                            <input
-                                style={styles.input}
-                                type="datetime-local"
-                                value={formData.workTime}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, workTime: e.target.value })
-                                }
-                                required
-                            />
+
+                        <div className="input-row">
+                            <div className="input-group date-picker">
+                                <label className="label">Дата и время</label>
+                                <DatePicker
+                                    selected={formData.workTime}
+                                    onChange={(date) => setFormData({...formData, workTime: date})}
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="Pp"
+                                    placeholderText="Выберите дату и время"
+                                    minDate={new Date()}
+                                    minTime={getMinTime(formData.workTime)}
+                                    maxTime={new Date(0, 0, 0, 23, 59, 59)}
+                                    className="input"
+                                    portalId="date-picker-portal"
+                                    popperProps={{
+                                        modifiers: [
+                                            {
+                                                name: "preventOverflow",
+                                                options: {
+                                                    boundary: "viewport",
+                                                },
+                                            },
+                                            {
+                                                name: "offset",
+                                                options: {
+                                                    offset: [0, 8],
+                                                },
+                                            },
+                                        ],
+                                    }}
+                                />
+
+
+                            </div>
+                            <div className="input-group">
+                                <label className="label">Предложенная сумма</label>
+                                <input
+                                    className="input"
+                                    type="number"
+                                    placeholder="Введите сумму"
+                                    value={formData.proposedSum}
+                                    onChange={(e) =>
+                                        setFormData({...formData, proposedSum: e.target.value})
+                                    }
+                                    required
+                                />
+                            </div>
                         </div>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Фото</label>
-                            <input
-                                style={styles.input}
-                                type="file"
-                                onChange={(e) =>
-                                    setFormData({ ...formData, photo: e.target.files[0] })
-                                }
-                            />
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <label style={styles.label}>Предложенная сумма</label>
-                            <input
-                                style={styles.input}
-                                type="number"
-                                placeholder="Введите сумму"
-                                value={formData.proposedSum}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, proposedSum: e.target.value })
-                                }
-                                required
-                            />
-                        </div>
-                        <button type="submit" style={styles.submitButton}>
+                        <button type="submit" className="submit-button">
                             Создать заказ
                         </button>
                     </form>
@@ -213,98 +255,5 @@ function CreateOrderPage({ currentUserId }) {
         </YMaps>
     );
 }
-
-
-const styles = {
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f2f2f2',
-        padding: '20px',
-    },
-    formContainer: {
-        backgroundColor: '#fff',
-        padding: '30px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        maxWidth: '500px',
-    },
-    title: {
-        fontSize: '24px',
-        marginBottom: '20px',
-        textAlign: 'center',
-        color: '#333',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    inputGroup: {
-        marginBottom: '20px',
-    },
-    label: {
-        fontSize: '16px',
-        marginBottom: '5px',
-        color: '#555',
-    },
-    input: {
-        width: '100%',
-        padding: '10px',
-        fontSize: '14px',
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-    },
-    textarea: {
-        width: '100%',
-        padding: '10px',
-        fontSize: '14px',
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-        minHeight: '100px',
-        resize: 'vertical',
-    },
-    submitButton: {
-        backgroundColor: '#007aff',
-        color: '#fff',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '16px',
-    },
-    errorText: {
-        color: 'red',
-        fontSize: '14px',
-        marginBottom: '10px',
-    },
-    mapContainer: {
-        width: '100%',
-        height: '300px',
-        marginBottom: '20px',
-    },
-
-    suggestions: {
-        position: 'absolute',
-        top: '100%',
-        left: 0,
-        width: '100%',
-        maxHeight: '150px',
-        overflowY: 'auto',
-        background: '#fff',
-        border: '1px solid #ccc',
-        zIndex: 10,
-        listStyle: 'none',
-        margin: 0,
-        padding: '0',
-    },
-    suggestionItem: {
-        padding: '8px',
-        cursor: 'pointer',
-        borderBottom: '1px solid #ddd',
-    },
-};
 
 export default CreateOrderPage;

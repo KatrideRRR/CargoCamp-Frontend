@@ -1,0 +1,196 @@
+/* Отступ сверху для всего контейнера */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 2rem auto;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding-top: 6rem; /* Учитываем высоту Navbar */
+    box-sizing: border-box; /* Для учета внутренних отступов */
+}
+
+/* Центровка формы */
+.form-container {
+    width: 100%;
+    max-width: 600px; /* Ограничиваем максимальную ширину формы */
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Учитываем padding внутри формы */
+}
+
+/* Форматирование формы */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Мобильная версия: настройка отступов */
+@media (max-width: 768px) {
+    .container {
+        padding-top: 3rem; /* Уменьшенный отступ от navbar */
+        margin-bottom: 4rem; /* Дополнительный отступ для bottommenu */
+    }
+}
+
+/* Поля в строку */
+.input-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Выравнивание по началу */
+    gap: 1rem;
+}
+
+/* Поля в мобильной версии */
+@media (max-width: 768px) {
+    .input-row {
+        flex-direction: column; /* Перенос на новую строку */
+        align-items: stretch; /* Поля занимают 100% ширины */
+        gap: 1.5rem; /* Увеличиваем расстояние между элементами */
+    }
+}
+
+
+/* Группа ввода */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1; /* Уравниваем ширину полей */
+    position: relative; /* Родительский элемент для абсолютного позиционирования подсказок */
+}
+
+/* Поле "Дата и время" */
+.input-group.date-picker {
+    flex: 1; /* Ширина поля равна ширине остальных */
+}
+
+/* Поля ввода */
+.input,
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    background-color: #f9f9f9;
+    box-sizing: border-box; /* Учет padding */
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: #0077ff;
+    background-color: #ffffff;
+}
+
+/* Кнопка "Создать заказ" */
+.submit-button {
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #0077ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.submit-button:hover {
+    background-color: #005bb5;
+}
+
+/* Ошибки */
+.error-text {
+    color: red;
+    font-size: 0.9rem;
+}
+
+/* Карта */
+.map-container {
+    margin: 1.5rem 0;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Подсказки */
+.suggestions {
+    position: absolute; /* Абсолютное позиционирование относительно input-group */
+    z-index: 1000;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    margin-top: 4.5rem; /* Смещение вниз от текстового поля */
+    width: 100%; /* Ширина равна ширине текстового поля */
+    max-height: 150px; /* Ограничиваем высоту списка подсказок */
+    overflow-y: auto; /* Добавляем прокрутку, если подсказок слишком много */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Эстетическая тень */
+    box-sizing: border-box; /* Учитываем padding и border */
+}
+
+.suggestion-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.suggestion-item:hover {
+    background-color: #f2f2f2;
+}
+
+/* Для числовых полей */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    background-color: #f9f9f9;
+    overflow: hidden; /* Убирает лишние полосы прокрутки */
+    resize: none; /* Запрещает изменение размера вручную */
+    min-height: 60px; /* Минимальная высота */
+    box-sizing: border-box; /* Учитывает padding в высоте */
+}
+
+.textarea:focus {
+    border-color: #0077ff;
+    background-color: #ffffff;
+}
+.react-datepicker__portal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+    width: 100%;
+    max-width: 320px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    padding: 1rem;
+    box-sizing: border-box;
+}
