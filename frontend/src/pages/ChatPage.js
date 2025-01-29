@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client';
 import React, {useState, useEffect, useCallback, useRef} from 'react';
 import axios from 'axios';
 import {useParams} from 'react-router-dom';
@@ -13,6 +14,28 @@ const ChatPage = () => {
     const {currentUser} = useUser();
     const [selectedUser, setSelectedUser] = useState(null);
     const messagesEndRef = useRef(null);
+    const socket = useRef(null); // Храним WebSocket соединение
+
+    useEffect(() => {
+        // Подключаемся к серверу
+        socket.current = io('http://localhost:5000');
+
+        if (currentUser) {
+            // Присоединяемся к чату с нашим userId
+            socket.current.emit('joinChat', { userId: currentUser.id });
+
+            // Слушаем входящие сообщения
+            socket.current.on('receiveMessage', (message) => {
+                console.log('Получено новое сообщение:', message);
+                setMessages((prev) => [...prev, message]); // Обновляем список сообщений
+            });
+        }
+
+        return () => {
+            // Отключаемся при размонтировании
+            socket.current.disconnect();
+        };
+    }, [currentUser]);
 
     // Функция для прокрутки вниз
     const scrollToBottom = () => {
@@ -57,23 +80,37 @@ const ChatPage = () => {
     }, [orderId, currentUser]);
 
     const handleSendMessage = useCallback(async () => {
-        if (!newMessage.trim() || !currentUser || !orderId) return;
+        if (!newMessage.trim() || !currentUser || !orderId || !selectedUser) return;
 
         try {
-            const {data} = await axios.post(
+            const messageData = {
+                content: newMessage,
+                senderId: currentUser.id,
+                receiverId: selectedUser.id,
+                orderId
+            };
+
+            // Отправляем сообщение в базу данных через API
+            const { data } = await axios.post(
                 'http://localhost:5000/api/messages',
-                {content: newMessage, receiverId: selectedUser.id, orderId},
-                {headers: {Authorization: `Bearer ${localStorage.getItem('authToken')}`}}
+                messageData,
+                { headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` } }
             );
 
+            // Отправляем сообщение через WebSocket
+            socket.current.emit('sendMessage', data);
 
+            // Добавляем в локальный список сообщений
             setMessages((prev) => [...prev, data]);
+
+            // Очищаем поле ввода
             setNewMessage('');
         } catch (err) {
             console.error('Ошибка отправки сообщения:', err);
             setError('Не удалось отправить сообщение.');
         }
     }, [newMessage, orderId, currentUser, selectedUser]);
+
 
     if (loading) {
         return <div className="chat-page">Загрузка чата...</div>;

@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const http = require('http');
+const socketIo = require('socket.io');
 const Sequelize = require('sequelize');
 
 const initUser = require('./models/User');
@@ -15,7 +16,44 @@ const messagesRoutes = require('./routes/messages');
 
 const app = express();
 const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
+let users = {}; // Храним пользователей, которые подключились к WebSocket
+
+io.on('connection', (socket) => {
+    console.log('Новое подключение:', socket.id);
+
+    // Событие при заходе пользователя (например, присоединение к чату)
+    socket.on('joinChat', ({ userId }) => {
+        users[userId] = socket.id;
+        console.log(`Пользователь ${userId} подключился: ${socket.id}`);
+    });
+
+    // Событие получения нового сообщения
+    socket.on('sendMessage', (message) => {
+        console.log('Новое сообщение:', message);
+
+        // Отправляем сообщение всем, кроме отправителя
+        if (users[message.receiverId]) {
+            io.to(users[message.receiverId]).emit('receiveMessage', message);
+        }
+    });
+
+    // Отключение пользователя
+    socket.on('disconnect', () => {
+        console.log('Пользователь отключился:', socket.id);
+        Object.keys(users).forEach(userId => {
+            if (users[userId] === socket.id) {
+                delete users[userId];
+            }
+        });
+    });
+});
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
