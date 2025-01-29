@@ -5,59 +5,86 @@
     right: 0;
     height: 70px;
     background-color: #ffffff;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 1000;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.menu-left, .menu-right {
-    display: flex;
-    gap: 15px;
-}
-
-.menu-center {
-    position: relative;
-}
-
-.menu-plus {
-    position: absolute;
-    top: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70px;
-    height: 70px;
-    background-color: #007aff;
-    color: #ffffff;
-    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 28px;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    text-decoration: none;
-    transition: background-color 0.3s ease;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
 
-.menu-plus:hover {
-    background-color: #0051d4;
+.menu-left,
+.menu-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.menu-left {
+    margin-right: 120px; /* Расстояние от центральной кнопки для левой кнопки */
+}
+
+.menu-right {
+    margin-left: 120px; /* Расстояние от центральной кнопки для правой кнопки */
 }
 
 .menu-item {
-    font-size: 16px;
-    font-weight: bold;
-    color: #007aff;
+    font-size: 14px;
+    font-weight: 600;
+    color: #007bff;
     text-decoration: none;
-    padding: 10px 15px;
-    border-radius: 10px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    padding: 10px 16px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .menu-item:hover {
-    background-color: rgba(0, 122, 255, 0.1);
-    color: #0051d4;
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 2px solid #007bff;
+    color: #0056b3;
+}
+
+.menu-center {
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    color: #ffffff;
+    border-radius: 50%;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-size: 20px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.menu-center:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .bottom-menu {
+        height: 60px;
+    }
+
+    .menu-item {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    .menu-center {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+    }
+
+    .menu-item.menu-left,
+    .menu-item.menu-right {
+        margin: 50px; /* Убираем фиксированные отступы */
+    }
 }

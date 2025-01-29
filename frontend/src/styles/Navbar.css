@@ -8,49 +8,102 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px;
-    font-size: 20px;
-    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 15px; /* Отступы слева и справа */
 }
-.navbar-title {
-    text-align: center;
+
+/* Выравнивание кнопок и заголовка */
+.navbar-left, .navbar-right {
+    flex: 1;
+    display: flex;
+    justify-content: center; /* Сдвигаем кнопки к центру */
+    align-items: center;
 }
 
 .navbar-left {
-    display: flex;
-    gap: 15px;
+    justify-content: flex-end; /* Кнопка Home ближе к центру */
 }
 
+.navbar-right {
+    justify-content: flex-start; /* Кнопка Profile ближе к центру */
+}
+
+/* Стиль заголовка */
+.navbar-title {
+    flex: 0 1 auto;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 10px;
+    border-radius: 12px;
+}
+
+/* Единый стиль кнопок */
 .navbar-item {
     font-size: 16px;
-    font-weight: bold;
-    color: #007aff;
+    font-weight: 600;
+    color: #007bff;
     text-decoration: none;
-    padding: 10px 15px;
-    border-radius: 10px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Расстояние между иконкой и текстом */
 }
 
 .navbar-item:hover {
-    background-color: rgba(0, 122, 255, 0.1);
-    color: #0051d4;
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 2px solid #007bff;
+    color: #0056b3;
 }
 
-.navbar-button {
+/* Иконка Home */
+.navbar-home::before {
+    content: '🏠';
     font-size: 16px;
-    font-weight: bold;
-    color: #007aff;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px 15px;
-    border-radius: 10px;
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.navbar-button:hover {
-    background-color: rgba(0, 122, 255, 0.1);
-    color: #0051d4;
+/* Иконка Profile */
+.navbar-profile::before {
+    content: '👤';
+    font-size: 16px;
 }
+/* Адаптивность */
+@media (max-width: 768px) {
+    .navbar {
+        height: 60px;
+        padding: 0 10px; /* Сужаем отступы для мобильных */
+
+    }
+
+    .navbar-title {
+        font-size: 18px;
+    }
+
+
+    .navbar-item {
+        font-size: 14px;
+        padding: 6px 8px;
+    }
+
+    /* Левая кнопка */
+    .navbar-left {
+        margin-right: 15px; /* Отодвигаем кнопку Home к левому краю */
+    }
+
+    /* Правая кнопка */
+    .navbar-right {
+        margin-left: auto; /* Отодвигаем кнопку Profile к правому краю */
+    }
+
+}
+

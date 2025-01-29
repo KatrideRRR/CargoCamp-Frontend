@@ -1,0 +1,136 @@
+import React, {useState, useEffect, useCallback, useRef} from 'react';
+import axios from 'axios';
+import {useParams} from 'react-router-dom';
+import '../styles/ChatPage.css';
+import {useUser} from '../utils/userContext';
+
+const ChatPage = () => {
+    const {orderId} = useParams();
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const {currentUser} = useUser();
+    const [selectedUser, setSelectedUser] = useState(null);
+    const messagesEndRef = useRef(null);
+
+    // Функция для прокрутки вниз
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
+    };
+
+    // Прокрутка вниз при добавлении новых сообщений
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]); // Запускается при изменении списка сообщений
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+                const {data: order} = await axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+                    headers: {Authorization: `Bearer ${localStorage.getItem('authToken')}`},
+                });
+
+                const userId = order.creatorId === currentUser.id ? order.executorId : order.creatorId;
+                const {data: user} = await axios.get(`http://localhost:5000/api/auth/${userId}`);
+                setSelectedUser(user);
+
+                const {data: messagesData} = await axios.get(`http://localhost:5000/api/messages/${orderId}`, {
+                    headers: {Authorization: `Bearer ${localStorage.getItem('authToken')}`},
+                });
+                setMessages(messagesData);
+            } catch (err) {
+                console.error('Ошибка загрузки данных:', err);
+                setError('Не удалось загрузить данные чата.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (orderId && currentUser) {
+            fetchData();
+
+        }
+    }, [orderId, currentUser]);
+
+    const handleSendMessage = useCallback(async () => {
+        if (!newMessage.trim() || !currentUser || !orderId) return;
+
+        try {
+            const {data} = await axios.post(
+                'http://localhost:5000/api/messages',
+                {content: newMessage, receiverId: selectedUser.id, orderId},
+                {headers: {Authorization: `Bearer ${localStorage.getItem('authToken')}`}}
+            );
+
+
+            setMessages((prev) => [...prev, data]);
+            setNewMessage('');
+        } catch (err) {
+            console.error('Ошибка отправки сообщения:', err);
+            setError('Не удалось отправить сообщение.');
+        }
+    }, [newMessage, orderId, currentUser, selectedUser]);
+
+    if (loading) {
+        return <div className="chat-page">Загрузка чата...</div>;
+    }
+
+    if (error) {
+        return <div className="chat-page">Ошибка: {error}</div>;
+    }
+
+    return (
+        <div className="chat-page">
+            <div className="chat-container">
+                <header className="chat-header">
+                    Чат для заказа #{orderId} с {selectedUser?.username}
+                </header>
+                <div className="chat-messages" style={{overflowY: "auto", maxHeight: "auto"}}>
+                    {messages.length > 0 ? (
+                        messages.map((msg) => (
+                            <div
+                                key={msg.id}
+
+                                className={`chat-message ${
+                                    msg.senderId === currentUser.id ? 'chat-message-sent' : 'chat-message-received'
+                                }`}
+                            >
+                                <p>{msg.content}</p>
+                                <div ref={messagesEndRef}/>
+                            </div>
+
+                        ))
+                    ) : (
+                        <div className="chat-empty">Нет сообщений</div>
+                    )}
+                </div>
+
+                <div className="chat-input-container">
+                    <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Введите сообщение..."
+                        className="chat-input"
+                        rows="1"
+                        onInput={(e) => {
+                            const textarea = e.target;
+                            textarea.style.height = 'auto'; // Сбрасываем высоту
+                            textarea.style.height = textarea.scrollHeight + 'px'; // Устанавливаем новую высоту
+
+                            // Обновляем CSS-переменную
+                            document.documentElement.style.setProperty('--chat-input-height', `${textarea.scrollHeight + 20}px`);
+                        }}
+                    />
+
+                    <button onClick={handleSendMessage} className="chat-send-button" disabled={!newMessage.trim()}></button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ChatPage;

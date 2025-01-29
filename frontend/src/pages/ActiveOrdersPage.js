@@ -21,6 +21,8 @@ const ActiveOrdersPage = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setOrders(response.data); // Сохранение заказов в состоянии
+                localStorage.setItem('userId', response.data.userId); // Вставьте правильный путь к ID пользователя
+
             } catch (err) {
                 console.error('Ошибка при загрузке активных заказов:', err);
             }
@@ -61,6 +63,8 @@ const ActiveOrdersPage = () => {
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
                                 <p className="order-status"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                <p>Создан: {order.creatorId === parseInt(localStorage.getItem('userId')) ? 'Вами' : 'Другим пользователем'}</p>
+                                <p>Исполнитель: {order.executorId}</p>
                                 <div className="action-buttons">
                                     <button
                                         className="call-button"
@@ -68,7 +72,9 @@ const ActiveOrdersPage = () => {
                                     >
                                         Позвонить
                                     </button>
-                                    <button className="message-button">Сообщение</button>
+                                    <button className="message-button"
+                                            onClick={() => navigate(`/messages/${order.id}`)}>Сообщение
+                                    </button>
                                     <button className="route-button">Маршрут</button>
                                     <button
                                         className="complete-button"

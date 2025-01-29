@@ -13,8 +13,7 @@ import Navbar from './components/Navbar';
 import SpecialOrdersPage from './pages/SpecialOrdersPage';
 import ActiveOrdersPage from './pages/ActiveOrdersPage';
 import BottomMenu from './components/BottomMenu';
-import ChatDetailsPage from './pages/ChatDetailsPage';
-import MassagePage from './pages/MassagePage';
+import ChatPage from './pages/ChatPage';
 import {AuthProvider} from "./utils/authContext";
 import { UserProvider } from './utils/userContext';
 
@@ -26,7 +25,7 @@ const App = () => {
             <Navbar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/massage" element={<MassagePage />} />
+                <Route path="/massage" element={<ChatPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element=
@@ -35,7 +34,7 @@ const App = () => {
                 <Route path="/active-orders" element={<ActiveOrdersPage />}/>
                 <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/create-order" element={<CreateOrderPage />} />
-                <Route path="/massage/:id" element={<ChatDetailsPage />} />
+                <Route path="/messages/:orderId" element={<ChatPage/>} />
             </Routes>
             <BottomMenu />
         </Router>

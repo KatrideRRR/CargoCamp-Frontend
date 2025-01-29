@@ -1,23 +1,28 @@
 require('dotenv').config();
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const http = require('http');
 const Sequelize = require('sequelize');
+
 const initUser = require('./models/User');
 const initOrder = require('./models/Order');
+const initMessage = require('./models/Message');
+
 const orderRoutes = require('./routes/orders');
 const authRoutes = require('./routes/auth');
+const messagesRoutes = require('./routes/messages');
 
 const app = express();
+const server = http.createServer(app);
+
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(bodyParser.json());
 app.use('/api/orders', orderRoutes);
-app.use(express.json());
 app.use('/api/auth', authRoutes);
-
+app.use('/api/messages', messagesRoutes);
 
 // Database connection
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
@@ -27,20 +32,22 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
 });
 
 sequelize.authenticate()
-    .then(() => console.log('Database connected'))
+    .then(() => console.log('Database connected.'))
     .catch((err) => console.error('Database connection error:', err));
 
 sequelize.sync()
-    .then(() => console.log('Database synchronized'))
+    .then(() => console.log('Database synchronized.'))
     .catch(err => console.error('Error synchronizing database:', err));
 
 // Models
 const User = initUser(sequelize, Sequelize.DataTypes);
 const Order = initOrder(sequelize, Sequelize.DataTypes);
+const Message = initMessage(sequelize, Sequelize.DataTypes);
 
-User.associate({ Order });
+User.associate({ Order, Message });
 Order.associate({ User });
+Message.associate({ User });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

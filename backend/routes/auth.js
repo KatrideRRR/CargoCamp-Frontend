@@ -99,4 +99,15 @@ router.put('/profile', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const user = await User.findByPk(userId); // Sequelize пример
+        if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Ошибка сервера', error: err.message });
+    }
+});
+
 module.exports = router;

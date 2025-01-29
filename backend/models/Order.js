@@ -58,6 +58,10 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
+            creatorId: {
+                type: DataTypes.INTEGER,
+                allowNull: false, // Убедитесь, что это поле всегда указывается
+            },
 
         },
         {

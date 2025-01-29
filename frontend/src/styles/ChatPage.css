@@ -1,0 +1,183 @@
+/* Основной контейнер страницы чата */
+.chat-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 95vh;
+    background-color: #f0f0f0;
+    box-sizing: border-box;
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+/* Основной контейнер чата */
+.chat-container {
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    height: calc(95vh - 120px);
+    background-color: white;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        max-width: 100%;
+        border: none;
+    }
+    .chat-page {
+        padding: 10px;
+        height: 90vh;
+    }
+}
+
+/* Заголовок чата */
+.chat-header {
+    padding: 16px;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Контейнер сообщений */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: #f7f7f7;
+    transition: padding-bottom 0.2s ease-in-out;
+}
+
+/* Сообщения */
+.chat-message {
+    max-width: 50%;
+    padding: 1px 24px;
+    font-size: 14px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    line-height: 1;
+    display: inline-block;
+    position: relative;
+}
+
+/* Отправленные сообщения */
+.chat-message-sent {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Полученные сообщения */
+.chat-message-received {
+    align-self: flex-start;
+    background-color: #e5e5ea;
+    color: black;
+    border-bottom-left-radius: 4px;
+}
+
+/* Контейнер ввода */
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    position: fixed;
+    bottom: 67px; /* Высота BottomMenu */
+    width: 100%;
+    max-width: 800px;
+    z-index: 100;
+}
+
+/* Исправлено: контейнер сообщений всегда прижат к вводу */
+.chat-messages {
+    padding-bottom: 40px; /* Сообщения не прячутся за текстовым полем */
+}
+
+/* Поле ввода */
+.chat-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    max-height: 150px;
+    overflow-y: auto;
+    background: #f7f7f7;
+    transition: height 0.2s ease-in-out;
+}
+
+/* Автоматическое увеличение текстового поля при фокусе */
+.chat-input:focus {
+    height: 80px; /* Увеличиваем размер при наборе текста */
+}
+
+/* После потери фокуса возвращаем высоту */
+.chat-input:not(:focus) {
+    height: 40px; /* Стандартная высота */
+}
+
+/* Кнопка отправки в виде кружка с иконкой стрелки */
+.chat-send-button {
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 10px;
+}
+
+.chat-send-button::after {
+    content: '➤';
+    font-size: 18px;
+    color: white;
+}
+
+.chat-send-button:hover {
+    background-color: #0056b3;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .chat-page {
+        padding-top: 45px;
+        padding-bottom: 60px;
+        width: 96vw;
+    }
+
+    .chat-container {
+        width: 100vw;  /* Растягиваем чат на всю ширину экрана */
+        max-width: 100vw;  /* Гарантируем, что он не меньше 100% */
+        height: calc(100vh - 100px);  /* Высота с учетом поля ввода */
+        margin: 0;  /* Убираем любые внешние отступы */
+        border-radius: 0;  /* Убираем скругления, если есть */
+    }
+
+    .chat-input-container {
+        bottom: 60px;
+        width: 96vw;  /* Поле ввода на всю ширину */
+        max-width: 100vw;  /* Убираем ограничения */
+        left: 0;  /* Фиксируем слева */
+        right: 0;  /* Фиксируем справа */
+    }
+}
