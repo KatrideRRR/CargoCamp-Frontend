@@ -51,7 +51,7 @@ const OrdersPage = () => {
                                 <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                 <p><strong>ID создателя:</strong> {order.creatorId}</p>
-                                <button
+                                {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}                                <button
                                     className="take-order-button"
                                     onClick={() => handleTakeOrder(order.id)}
                                 >

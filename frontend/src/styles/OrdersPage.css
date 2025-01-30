@@ -150,7 +150,14 @@
     max-width: 100%; /* Запрещаем выход за границы */
     word-break: break-word; /* Принудительный перенос длинных слов */
 }
-
+.order-photo {
+    width: 150px; /* Ширина 150px */
+    height: 150px; /* Высота 150px */
+    object-fit: cover; /* Картинка заполняет область */
+    border-radius: 10px; /* Скругленные углы */
+    margin-top: 10px; /* Отступ сверху */
+    margin-bottom: 10px;
+}
 
 /* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ --- */
 @media (max-width: 480px) {

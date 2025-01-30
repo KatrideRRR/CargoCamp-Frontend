@@ -73,16 +73,12 @@ const ProfilePage = () => {
     return (
         <div style={styles.container}>
             <div style={styles.profileContainer}>
-                <button onClick={handleLogout} style={styles.logoutButton}>
-                    Выйти
-                </button>
                 {profile ? (
                     <>
                         <div style={styles.section}>
                             <h2 style={styles.subtitle}>Имя пользователя:</h2>
                             <p style={styles.info}>{profile.username}</p>
                         </div>
-
                         <div style={styles.section}>
                             <h2 style={styles.subtitle}>Рейтинг:</h2>
                             <p style={styles.info}>{profile.rating || 'Нет рейтинга'}</p>
@@ -115,6 +111,9 @@ const ProfilePage = () => {
                                 </button>
                             )}
                         </div>
+                        <button onClick={handleLogout} style={styles.logoutButton}>
+                            Выйти
+                        </button>
                     </>
                 ) : (
                     <p style={styles.info}>Загрузка данных профиля...</p>

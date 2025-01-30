@@ -61,6 +61,7 @@ app.use(bodyParser.json());
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // Database connection
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {

@@ -65,6 +65,7 @@ const ActiveOrdersPage = () => {
                                 <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                 <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                 <p><strong>ID исполнителя:</strong> {order.executorId}</p>
+                                {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}
                                 <div className="action-buttons">
                                     <button className="call-button" onClick={() => window.open(`tel:${order.phone}`)}>Позвонить</button>
                                     <button className="message-button" onClick={() => navigate(`/messages/${order.id}`)}>Сообщение</button>

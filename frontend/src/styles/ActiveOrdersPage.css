@@ -24,13 +24,14 @@
 
 /* Карточка заказа */
 .order-card {
+    display: flex;
+    flex-direction: column; /* Основное содержимое сверху, кнопки внизу */
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
     padding: 14px;
     margin-bottom: 14px;
     border-left: 4px solid #007aff;
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .order-card:hover {
@@ -150,6 +151,15 @@
     max-width: 100%; /* Запрещаем выход за границы */
     word-break: break-word; /* Принудительный перенос длинных слов */
 }
+.order-photo {
+    width: 150px; /* Ширина 150px */
+    height: 150px; /* Высота 150px */
+    object-fit: cover; /* Картинка заполняет область */
+    border-radius: 10px; /* Скругленные углы */
+    margin-top: 10px; /* Отступ сверху */
+
+}
+
 
 
 /* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ --- */

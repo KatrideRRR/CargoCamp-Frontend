@@ -6,12 +6,23 @@ const { Order, User } = require('../models');
 const authenticateToken = require('../middlewares/authenticateToken');
 const multer = require('multer');
 const { Op } = require('sequelize');
-const upload = multer({ dest: 'uploads/' });
+const path = require('path');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/orders'); // Папка для загрузки изображений
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Уникальное имя файла
+    },
+});
+
+const upload = multer({ storage });
 
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 // Add a new order
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken,upload.single('image'), async (req, res) => {
     const { address, description, workTime, proposedSum, coordinates, type } = req.body;
     const userId = req.user.id;
 
@@ -25,6 +36,9 @@ router.post('/', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'Address not found' });
         }
 
+        const photoUrl = req.file ? `/uploads/orders/${req.file.filename}` : null;
+
+
         const newOrder = await Order.create({
             userId,
             address,
@@ -33,6 +47,7 @@ router.post('/', authenticateToken, async (req, res) => {
             proposedSum,
             coordinates,
             type,
+            photoUrl,
             creatorId: userId,
             status: 'pending',
         });
@@ -48,7 +63,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
-            attributes: ['id', 'address', 'description', 'workTime', 'proposedSum', 'coordinates', 'type'],
+            attributes: ['id', 'address', 'description', 'workTime','photoUrl' ,'proposedSum','creatorId' ,'coordinates', 'type'],
             where: { status: 'pending' },
         });
         res.json(orders);
