@@ -50,6 +50,7 @@ const OrdersPage = () => {
                                 <p className="order-description"><strong>Описание:</strong> {order.description}</p>
                                 <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
                                 <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                 <button
                                     className="take-order-button"
                                     onClick={() => handleTakeOrder(order.id)}

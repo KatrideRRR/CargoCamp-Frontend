@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {useNavigate} from "react-router-dom";
-import '../styles/OrdersPage.css'; // Импорт стилей
+import '../styles/ActiveOrdersPage.css'; // Импорт стилей
 
 const ActiveOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -59,32 +59,19 @@ const ActiveOrdersPage = () => {
                     <ul className="orders-list">
                         {orders.map((order) => (
                             <li key={order.id} className="order-card">
-                                <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
-                                <p className="order-description"><strong>Описание:</strong> {order.description}</p>
-                                <p className="order-status"><strong>Адрес:</strong> {order.address}</p>
-                                <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                <p>Создан: {order.creatorId === parseInt(localStorage.getItem('userId')) ? 'Вами' : 'Другим пользователем'}</p>
-                                <p>Исполнитель: {order.executorId}</p>
+                                <p><strong>Тип:</strong> {order.type}</p>
+                                <p><strong>Описание:</strong> {order.description}</p>
+                                <p><strong>Адрес:</strong> {order.address}</p>
+                                <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                <p><strong>ID создателя:</strong> {order.creatorId}</p>
+                                <p><strong>ID исполнителя:</strong> {order.executorId}</p>
                                 <div className="action-buttons">
-                                    <button
-                                        className="call-button"
-                                        onClick={() => window.open(`tel:${order.phone}`)}
-                                    >
-                                        Позвонить
-                                    </button>
-                                    <button className="message-button"
-                                            onClick={() => navigate(`/messages/${order.id}`)}>Сообщение
-                                    </button>
+                                    <button className="call-button" onClick={() => window.open(`tel:${order.phone}`)}>Позвонить</button>
+                                    <button className="message-button" onClick={() => navigate(`/messages/${order.id}`)}>Сообщение</button>
                                     <button className="route-button">Маршрут</button>
-                                    <button
-                                        className="complete-button"
-                                        onClick={() => handleCompleteOrder(order.id)}
-                                    >
-                                        Завершить
-                                    </button>
+                                    <button className="complete-button" onClick={() => handleCompleteOrder(order.id)}>Завершить</button>
                                 </div>
                             </li>
-
                         ))}
                     </ul>
                 ) : (

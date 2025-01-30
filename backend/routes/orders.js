@@ -11,7 +11,7 @@ const upload = multer({ dest: 'uploads/' });
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 // Add a new order
-router.post('/', authenticateToken, upload.single('photo'), async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     const { address, description, workTime, proposedSum, coordinates, type } = req.body;
     const userId = req.user.id;
 
