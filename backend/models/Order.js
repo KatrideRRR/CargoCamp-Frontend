@@ -62,6 +62,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false, // Убедитесь, что это поле всегда указывается
             },
+            completedBy: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER), // Массив ID пользователей, подтвердивших завершение
+                defaultValue: [],
+            },
+
 
         },
         {

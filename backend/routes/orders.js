@@ -147,24 +147,35 @@ router.post('/:id/take', authenticateToken, async (req, res) => {
 });
 
 // Complete an order
-router.post('/:orderId/complete', authenticateToken, async (req, res) => {
-    const { orderId } = req.params;
-
+router.post("/complete/:id", authenticateToken, async (req, res) => {
     try {
-        const order = await Order.findByPk(orderId);
+        const orderId = req.params.id;
+        const userId = req.user.id; // ID текущего пользователя
 
-        if (!order) {
-            return res.status(404).json({ message: 'Заказ не найден' });
+        const order = await Order.findByPk(orderId);
+        if (!order) return res.status(404).json({ message: "Заказ не найден" });
+
+        // Проверяем, есть ли текущий пользователь среди тех, кто подтверждал завершение
+        if (order.completedBy.includes(userId)) {
+            return res.status(400).json({ message: "Вы уже подтвердили завершение" });
         }
 
-        order.status = 'completed';
-        await order.save();
+        // Добавляем пользователя в массив `completedBy`
+        order.completedBy = [...order.completedBy, userId];
 
-        res.status(200).json({ message: 'Заказ успешно завершен', order });
+        // Если оба участника подтвердили, устанавливаем статус "completed"
+        if (order.completedBy.includes(order.creatorId) && order.completedBy.includes(order.executorId)) {
+            order.status = "completed";
+            order.completedAt = new Date(); // Фиксируем дату завершения
+        }
+
+        await order.save();
+        res.json(order);
     } catch (error) {
-        console.error('Ошибка при завершении заказа:', error);
-        res.status(500).json({ message: 'Ошибка сервера' });
+        console.error("Ошибка завершения заказа:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
 
 module.exports = router;
