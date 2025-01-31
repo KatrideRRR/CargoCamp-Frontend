@@ -6,6 +6,7 @@ import '../styles/OrdersPage.css';
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [error, setError] = useState(null);
+    const [userId, setUserId] = useState(null); // Сохраняем ID текущего пользователя
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,10 +19,19 @@ const OrdersPage = () => {
                 setError(err.response?.data?.message || 'Ошибка загрузки заказов');
             }
         };
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/auth/profile'); // Предполагаем, что этот запрос возвращает текущего пользователя
+                setUserId(response.data.id);
+            } catch (err) {
+                console.error("Ошибка получения профиля:", err);
+            }
+        };
 
-            fetchOrders();
-
+        fetchOrders();
+        fetchUserData();
     }, []);
+
 
     const handleTakeOrder = async (orderId) => {
         try {
@@ -46,18 +56,20 @@ const OrdersPage = () => {
                     <ul className="orders-list">
                         {orders.map((order) => (
                             <li className="order-card" key={order.id}>
-                                <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
-                                <p className="order-description"><strong>Описание:</strong> {order.description}</p>
-                                <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
-                                <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                <p><strong>ID создателя:</strong> {order.creatorId}</p>
-                                {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}                                <button
-                                    className="take-order-button"
-                                    onClick={() => handleTakeOrder(order.id)}
-                                >
-                                    Взять в работу
-                                </button>
+                                <div className="order-content">
+                                    <div className="order-left">
+                                        <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
+                                        <p className="order-description"><strong>Описание:</strong> {order.description}</p>
+                                        <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
+                                        <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                        <p><strong>ID создателя:</strong> {order.creatorId}</p>
+                                    </div>
+                                    {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}
+
+                                </div>{userId !== order.creatorId && (<button className="take-order-button" onClick={() => handleTakeOrder(order.id)}>Взять в работу</button>
+                                )}
                             </li>
+
                         ))}
                     </ul>
                 ) : (
