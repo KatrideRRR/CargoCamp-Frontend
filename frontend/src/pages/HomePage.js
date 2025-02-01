@@ -1,24 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Подключаемся к WebSocket серверу
 
 const HomePage = () => {
     const [orders, setOrders] = useState([]); // Список заказов
 
+// Функция загрузки заказов
+    const fetchOrders = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/orders/all', {
+                params: { status: 'pending' },
+            });
+            const ordersWithCoordinates = response.data.filter(order => order.coordinates);
+            setOrders(ordersWithCoordinates);
+        } catch (error) {
+            console.error('Ошибка загрузки заказов:', error);
+        }
+    };
+
     useEffect(() => {
-        // Получаем заказы с сервера
-        const fetchOrders = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/orders/all', {
-                    params: { status: 'pending' },
-                });
-                const ordersWithCoordinates = response.data.filter(order => order.coordinates); // Фильтруем только заказы с координатами
-                setOrders(ordersWithCoordinates);
-            } catch (error) {
-                console.error('Ошибка загрузки заказов:', error);
-            }
+        fetchOrders(); // Загружаем заказы при старте
+
+        // Подписываемся на обновления заказов через WebSocket
+        socket.on('orderUpdated', () => {
+            console.log('Обновление заказов через WebSocket');
+            fetchOrders(); // Перезагружаем список заказов
+        });
+
+        return () => {
+            socket.off('orderUpdated'); // Очищаем подписку при размонтировании
         };
-        fetchOrders();
     }, []);
 
     return (

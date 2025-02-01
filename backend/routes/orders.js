@@ -23,47 +23,51 @@ const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 module.exports = (io) => {
 
 // Add a new order
-router.post('/', authenticateToken,upload.single('image'), async (req, res) => {
-    const { address, description, workTime, proposedSum, coordinates, type } = req.body;
-    const userId = req.user.id;
+    router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
+        const { address, description, workTime, proposedSum, type } = req.body;
+        const userId = req.user.id;
 
-    try {
-        if (!address) {
-            return res.status(400).json({ message: 'Адрес обязателен' });
+        try {
+            if (!address) {
+                return res.status(400).json({ message: 'Адрес обязателен' });
+            }
+
+            // Получаем координаты из геокодера
+            const geoData = await geocoder.geocode(address);
+            if (!geoData.length) {
+                return res.status(404).json({ message: 'Адрес не найден' });
+            }
+
+            // Берем координаты из первого результата геокодинга
+            const { latitude, longitude } = geoData[0];
+            const coordinates = `${latitude},${longitude}`;
+
+            const photoUrl = req.file ? `/uploads/orders/${req.file.filename}` : null;
+
+            const newOrder = await Order.create({
+                userId,
+                address,
+                description,
+                workTime,
+                proposedSum,
+                coordinates, // Теперь координаты корректные!
+                type,
+                photoUrl,
+                creatorId: userId,
+                status: 'pending',
+            });
+
+            io.emit('orderUpdated'); // Отправляем событие обновления заказов
+
+            res.status(201).json(newOrder);
+        } catch (error) {
+            console.error('Ошибка при создании заказа:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
         }
-
-        const geoData = await geocoder.geocode(address);
-        if (!geoData.length) {
-            return res.status(404).json({ message: 'Address not found' });
-        }
-
-        const photoUrl = req.file ? `/uploads/orders/${req.file.filename}` : null;
-
-
-        const newOrder = await Order.create({
-            userId,
-            address,
-            description,
-            workTime,
-            proposedSum,
-            coordinates,
-            type,
-            photoUrl,
-            creatorId: userId,
-            status: 'pending',
-        });
-
-        io.emit('orderUpdated'); // Отправляем событие обновления заказов
-
-        res.status(201).json(newOrder);
-    } catch (error) {
-        console.error('Error creating order:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+    });
 
 // Get all orders
-router.get('/all', async (req, res) => {
+    router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
             attributes: ['id', 'address', 'description', 'workTime','photoUrl' ,'proposedSum','creatorId' ,'coordinates', 'type'],
@@ -77,7 +81,7 @@ router.get('/all', async (req, res) => {
 });
 
 // Get active orders
-router.get('/active-orders', authenticateToken, async (req, res) => {
+    router.get('/active-orders', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const activeOrders = await Order.findAll({
@@ -94,7 +98,7 @@ router.get('/active-orders', authenticateToken, async (req, res) => {
 });
 
 // Get order by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+    router.get('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const currentUserId = req.user.id;
 
@@ -123,7 +127,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Take an order
-router.post('/:id/take', authenticateToken, async (req, res) => {
+    router.post('/:id/take', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const executorId = req.user.id;
 
@@ -152,7 +156,7 @@ router.post('/:id/take', authenticateToken, async (req, res) => {
 });
 
 // Complete an order
-router.post("/complete/:id", authenticateToken, async (req, res) => {
+    router.post("/complete/:id", authenticateToken, async (req, res) => {
     try {
         const orderId = req.params.id;
         const userId = req.user.id; // ID текущего пользователя
