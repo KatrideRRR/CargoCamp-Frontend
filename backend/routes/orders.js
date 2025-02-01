@@ -1,4 +1,3 @@
-// routes/orders.js
 const express = require('express');
 const router = express.Router();
 const NodeGeocoder = require('node-geocoder');
@@ -20,6 +19,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
+
+module.exports = (io) => {
 
 // Add a new order
 router.post('/', authenticateToken,upload.single('image'), async (req, res) => {
@@ -51,6 +52,8 @@ router.post('/', authenticateToken,upload.single('image'), async (req, res) => {
             creatorId: userId,
             status: 'pending',
         });
+
+        io.emit('orderUpdated'); // Отправляем событие обновления заказов
 
         res.status(201).json(newOrder);
     } catch (error) {
@@ -139,6 +142,8 @@ router.post('/:id/take', authenticateToken, async (req, res) => {
         order.status = 'active';
         await order.save();
 
+        io.emit('orderUpdated'); // Обновление списка заказов
+
         res.json({ message: 'Order taken', order });
     } catch (error) {
         console.error('Error taking order:', error);
@@ -170,6 +175,10 @@ router.post("/complete/:id", authenticateToken, async (req, res) => {
         }
 
         await order.save();
+
+        io.emit('orderUpdated'); // Обновление списка заказов
+        io.emit('activeOrdersUpdated'); // Обновляем список активных заказов
+
         res.json(order);
     } catch (error) {
         console.error("Ошибка завершения заказа:", error);
@@ -178,4 +187,5 @@ router.post("/complete/:id", authenticateToken, async (req, res) => {
 });
 
 
-module.exports = router;
+    return router;
+};

@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import '../styles/OrdersPage.css';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Подключаем WebSocket
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -30,6 +33,14 @@ const OrdersPage = () => {
 
         fetchOrders();
         fetchUserData();
+
+        // Подписка на обновления WebSocket
+        socket.on('orderUpdated', fetchOrders);
+
+        return () => {
+            socket.off('orderUpdated', fetchOrders); // Очистка слушателя
+        };
+
     }, []);
 
 

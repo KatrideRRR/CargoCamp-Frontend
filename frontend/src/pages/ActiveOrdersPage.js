@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import '../styles/ActiveOrdersPage.css';
 import { useAuth } from '../utils/authContext';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Подключение к WebSocket
 
 const ActiveOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -30,6 +33,14 @@ const ActiveOrdersPage = () => {
         };
 
         fetchActiveOrders();
+
+        // Подписываемся на обновления активных заказов
+        socket.on('activeOrdersUpdated', fetchActiveOrders);
+
+        return () => {
+            socket.off('activeOrdersUpdated', fetchActiveOrders); // Очистка слушателя
+        };
+
     }, [navigate]);
 
     if (!user) {
