@@ -157,39 +157,38 @@ module.exports = (io) => {
 
 // Complete an order
     router.post("/complete/:id", authenticateToken, async (req, res) => {
-    try {
-        const orderId = req.params.id;
-        const userId = req.user.id; // ID текущего пользователя
+        try {
+            const orderId = req.params.id;
+            const userId = req.user.id; // ID текущего пользователя
 
-        const order = await Order.findByPk(orderId);
-        if (!order) return res.status(404).json({ message: "Заказ не найден" });
+            const order = await Order.findByPk(orderId);
+            if (!order) return res.status(404).json({ message: "Заказ не найден" });
 
-        // Проверяем, есть ли текущий пользователь среди тех, кто подтверждал завершение
-        if (order.completedBy.includes(userId)) {
-            return res.status(400).json({ message: "Вы уже подтвердили завершение" });
+            // Проверяем, есть ли текущий пользователь среди тех, кто подтверждал завершение
+            if (order.completedBy.includes(userId)) {
+                return res.status(400).json({ message: "Вы уже подтвердили завершение" });
+            }
+
+            // Добавляем пользователя в массив `completedBy`
+            order.completedBy = [...order.completedBy, userId];
+
+            // Если оба участника подтвердили, устанавливаем статус "completed"
+            if (order.completedBy.includes(order.creatorId) && order.completedBy.includes(order.executorId)) {
+                order.status = "completed";
+                order.completedAt = new Date(); // Фиксируем дату завершения
+            }
+
+            await order.save();
+
+            io.emit('orderUpdated'); // Обновление списка заказов
+            io.emit('activeOrdersUpdated'); // Обновляем список активных заказов
+
+            res.json(order);
+        } catch (error) {
+            console.error("Ошибка завершения заказа:", error);
+            res.status(500).json({ message: "Ошибка сервера" });
         }
-
-        // Добавляем пользователя в массив `completedBy`
-        order.completedBy = [...order.completedBy, userId];
-
-        // Если оба участника подтвердили, устанавливаем статус "completed"
-        if (order.completedBy.includes(order.creatorId) && order.completedBy.includes(order.executorId)) {
-            order.status = "completed";
-            order.completedAt = new Date(); // Фиксируем дату завершения
-        }
-
-        await order.save();
-
-        io.emit('orderUpdated'); // Обновление списка заказов
-        io.emit('activeOrdersUpdated'); // Обновляем список активных заказов
-
-        res.json(order);
-    } catch (error) {
-        console.error("Ошибка завершения заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
-    }
-});
-
+    });
 
     return router;
 };

@@ -12,6 +12,10 @@ const ActiveOrdersPage = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [rating, setRating] = useState(0);
+
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
@@ -48,31 +52,53 @@ const ActiveOrdersPage = () => {
     }
 
     const handleCompleteOrder = async (orderId) => {
+        // Показываем модальное окно для оценки
+        const orderToComplete = orders.find(order => order.id === orderId);
+        setSelectedOrder(orderToComplete); // Устанавливаем выбранный заказ
+        setShowRatingModal(true); // Показываем модальное окно для оценки
+    };
+
+
+
+    const submitRating = async () => {
+        if (!selectedOrder || rating === 0) return;
+
         try {
-            console.log("Order data before sending to server:", orderId);
-            fetch('/api/orders/complete/${orderId}', {
-                method: 'POST',
-                body: JSON.stringify(orderId),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            const token = localStorage.getItem('authToken');
+
+            // 1. Отправляем оценку на сервер
+            await axios.post("http://localhost:5000/api/auth/rate", {
+                userId: selectedOrder.executorId === user.id
+                    ? selectedOrder.creatorId
+                    : selectedOrder.executorId,
+                rating,
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
             });
 
-            const token = localStorage.getItem('authToken'); // Добавляем токен для авторизации
-            const response = await axios.post(`http://localhost:5000/api/orders/complete/${orderId}`,
-                {}, // Тело запроса пустое, но его нужно передать
+            // 2. Завершаем заказ
+            await axios.post(`http://localhost:5000/api/orders/complete/${selectedOrder.id}`,
+                {}, // Тело запроса пустое
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            const updatedOrder = response.data;
+
+            // 3. Обновляем состояние заказов в интерфейсе
             setOrders((prevOrders) =>
                 prevOrders.map((order) =>
-                    order.id === orderId ? updatedOrder : order
+                    order.id === selectedOrder.id ? { ...order, completed: true } : order
                 )
             );
+
+            // 4. Закрываем модальное окно и сбрасываем состояния
+            setShowRatingModal(false);
+            setSelectedOrder(null);
+            setRating(0);
+
         } catch (error) {
-            console.error("Ошибка завершения заказа:", error);
+            console.error("Ошибка при завершении заказа или отправке рейтинга", error);
         }
     };
+
 
     const handleRemoveOrder = (orderId) => {
         setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
@@ -127,6 +153,27 @@ const ActiveOrdersPage = () => {
                                                 Завершить
                                             </button>
                                         )}
+                                        {showRatingModal && selectedOrder?.id === order.id && (
+                                            <div className="modal">
+                                                <h2>Оцените участника</h2>
+                                                <div className="stars">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span
+                                                            key={star}
+                                                            className={star <= rating ? "star selected" : "star"}
+                                                            onClick={() => setRating(star)}
+                                                        >
+                    ★
+                </span>
+                                                    ))}
+                                                </div>
+                                                <button onClick={submitRating} disabled={rating === 0}>
+                                                    Завершить заказ
+                                                </button>
+                                            </div>
+                                        )}
+
+
                                     </div>
                                 </li>
                             );

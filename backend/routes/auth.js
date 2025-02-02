@@ -110,4 +110,27 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.post("/rate", authenticateToken,async (req, res) => {
+    try {
+        console.log('Получен запрос на рейтинг');
+
+        const { userId, rating } = req.body;
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+
+        user.rating = (user.rating * user.ratingCount + rating) / (user.ratingCount + 1);
+        user.ratingCount += 1;
+
+        await user.save();
+
+        res.json({ message: "Рейтинг успешно обновлен" });
+    } catch (error) {
+        console.error("Ошибка обновления рейтинга", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 module.exports = router;
