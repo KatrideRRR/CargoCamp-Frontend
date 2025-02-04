@@ -1,24 +1,89 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import io from 'socket.io-client';
+import axiosInstance from './axiosInstance';
 
 export const ModalContext = createContext();
 
-export const ModalProvider = ({ children }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState(null);
+const socket = io('http://localhost:5000'); // Подключаем WebSocket
 
-    const openModal = (content) => {
-        setModalContent(content);
-        setIsModalOpen(true);
+export const ModalProvider = ({ children }) => {
+    const [modalData, setModalData] = useState(null);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/auth/profile');
+                setUserId(response.data.id);
+                socket.emit('register', response.data.id);
+            } catch (error) {
+                console.error("❌ Ошибка загрузки профиля:", error);
+            }
+        };
+
+        fetchUserData();
+
+        if (userId) {
+            console.log("🔄 Подключаем WebSocket для пользователя:", userId);
+
+            socket.on('orderRequested', (data) => {
+                console.log("🔔 Получен запрос на выполнение заказа:", data);
+
+                if (data.creatorId === userId) {
+                    setModalData({
+                        title: "Запрос на выполнение заказа",
+                        description: `Пользователь ${data.executorId} хочет выполнить ваш заказ.`,
+                        onConfirm: () => handleApproveOrder(data.orderId),
+                        onCancel: () => handleRejectOrder(data.orderId),
+                    });
+                }
+            });
+
+            return () => {
+                socket.off('orderRequested');
+            };
+        }
+    }, [userId]);
+
+    const openModal = (data) => {
+        setModalData(data);
     };
 
     const closeModal = () => {
-        setIsModalOpen(false);
-        setModalContent(null);
+        setModalData(null);
+    };
+
+    const handleApproveOrder = async (orderId) => {
+        try {
+            await axiosInstance.post(`/orders/${orderId}/approve`);
+            closeModal();
+        } catch (error) {
+            console.error("❌ Ошибка при одобрении заказа:", error);
+            alert(error.response?.data?.message || "Не удалось одобрить заказ");
+        }
+    };
+
+    const handleRejectOrder = async (orderId) => {
+        try {
+            await axiosInstance.post(`/orders/${orderId}/reject`);
+            closeModal();
+        } catch (error) {
+            console.error("Ошибка при отклонении исполнителя:", error);
+            alert(error.response?.data?.message || "Не удалось отклонить исполнителя");
+        }
     };
 
     return (
-        <ModalContext.Provider value={{ isModalOpen, modalContent, openModal, closeModal }}>
+        <ModalContext.Provider value={{ openModal, closeModal }}>
             {children}
+            {modalData && (
+                <div className="modal">
+                    <h2>{modalData.title}</h2>
+                    <p>{modalData.description}</p>
+                    <button onClick={modalData.onConfirm}>Одобрить</button>
+                    <button onClick={modalData.onCancel}>Отклонить</button>
+                </div>
+            )}
         </ModalContext.Provider>
     );
 };
