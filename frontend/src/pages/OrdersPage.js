@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import '../styles/OrdersPage.css';
 import io from 'socket.io-client';
+import Modal from '../components/Modal'; // Импортируем модальное окно
 
 const socket = io('http://localhost:5000'); // Подключаем WebSocket
 
@@ -11,11 +12,14 @@ const OrdersPage = () => {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null); // Сохраняем ID текущего пользователя
     const navigate = useNavigate();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [pendingRequest, setPendingRequest] = useState(null); // Данные о запросе
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 const response = await axiosInstance.get('/orders/all');
+                console.log("📦 Загружены заказы:", response.data);
                 setOrders(response.data);
                 console.log(response.data);
             } catch (err) {
@@ -25,35 +29,82 @@ const OrdersPage = () => {
         const fetchUserData = async () => {
             try {
                 const response = await axiosInstance.get('/auth/profile'); // Предполагаем, что этот запрос возвращает текущего пользователя
+                console.log("👤 Данные пользователя:", response.data);
                 setUserId(response.data.id);
+                socket.emit('register', response.data.id);
+
             } catch (err) {
-                console.error("Ошибка получения профиля:", err);
+                console.error("❌ Ошибка получения профиля:", err);
             }
         };
 
         fetchOrders();
         fetchUserData();
 
-        // Подписка на обновления WebSocket
-        socket.on('orderUpdated', fetchOrders);
+        if (userId) {
+            console.log("🔄 Подключаем WebSocket для пользователя:", userId);
 
-        return () => {
-            socket.off('orderUpdated', fetchOrders); // Очистка слушателя
-        };
+            const handleOrderRequested = (data) => {
+                console.log("🔔 Получен запрос на заказ:", data);
 
-    }, []);
+                if (data.creatorId === userId) {
+                    setPendingRequest(data);
+                    setModalOpen(true);
+                }
+            };
+            const handleApproveOrder = (data) => {
+                console.log("✅ Заказ одобрен через WebSocket:", data);
+
+                alert(`✅ ${data.message}`);
+            };
 
 
-    const handleTakeOrder = async (orderId) => {
+            socket.on('orderApproved', handleApproveOrder);
+            socket.on('orderUpdated', fetchOrders);
+            socket.on('orderRequested', handleOrderRequested);
+
+            return () => {
+                socket.off('orderUpdated', fetchOrders);
+                socket.off('orderRequested', handleOrderRequested);
+                socket.off('orderApproved', handleApproveOrder);
+            };
+        }
+    }, [userId]);
+
+
+    const handleRequestOrder = async (orderId) => {
         try {
-            await axiosInstance.post(`/orders/${orderId}/take`);
-            alert("Заказ взят в работу!");
-            navigate('/active-orders'); // Перенаправляем пользователя
+            await axiosInstance.post(`/orders/${orderId}/request`);
+            alert("Запрос отправлен заказчику!");
         } catch (error) {
-            console.error("Ошибка при взятии заказа:", error);
-            alert(error.response?.data?.message || "Не удалось взять заказ");
+            console.error("Ошибка при запросе на выполнение заказа:", error);
+            alert(error.response?.data?.message || "Не удалось отправить запрос");
         }
     };
+    const handleApproveOrder = async (orderId) => {
+        try {
+            console.log("🚀 Отправляем запрос на одобрение заказа:", orderId);
+            await axiosInstance.post(`/orders/${orderId}/approve`);
+            setModalOpen(false);
+            setPendingRequest(null);
+            navigate('/active-orders');
+        } catch (error) {
+            console.error("❌ Ошибка при одобрении заказа:", error);
+            alert(error.response?.data?.message || "Не удалось одобрить заказ");
+        }
+    };
+
+    const handleRejectOrder = async (orderId) => {
+        try {
+            await axiosInstance.post(`/orders/${orderId}/reject`);
+            setModalOpen(false);
+            setPendingRequest(null);
+        } catch (error) {
+            console.error("Ошибка при отклонении исполнителя:", error);
+            alert(error.response?.data?.message || "Не удалось отклонить исполнителя");
+        }
+    };
+
 
 
     if (error) {
@@ -77,8 +128,17 @@ const OrdersPage = () => {
                                     </div>
                                     {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}
 
-                                </div>{userId !== order.creatorId && (<button className="take-order-button" onClick={() => handleTakeOrder(order.id)}>Взять в работу</button>
+                                </div>{userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
+                                <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
+                            )}
+                                {userId === order.creatorId && order.executorId && order.status === 'pending' && (
+                                    <>
+                                        <button className="approve-button" onClick={() => handleApproveOrder(order.id)}>Одобрить</button>
+                                        <button className="reject-button" onClick={() => handleRejectOrder(order.id)}>Отклонить</button>
+                                    </>
                                 )}
+
+
                             </li>
 
                         ))}
@@ -87,9 +147,18 @@ const OrdersPage = () => {
                     <p className="no-orders">Нет доступных заказов.</p> // Сообщение, если заказов нет
                 )}
             </div>
+
+            {/* Модальное окно */}
+            {modalOpen && pendingRequest && (
+                <Modal onClose={() => setModalOpen(false)}>
+                    <h2>Запрос на выполнение заказа</h2>
+                    <p><strong>Исполнитель:</strong> {pendingRequest.executorId}</p>
+                    <button className="approve-button" onClick={() => handleApproveOrder(pendingRequest.orderId)}>Одобрить</button>
+                    <button className="reject-button" onClick={() => handleRejectOrder(pendingRequest.orderId)}>Отклонить</button>
+                </Modal>
+            )}
         </div>
     );
-
 };
 
 export default OrdersPage;

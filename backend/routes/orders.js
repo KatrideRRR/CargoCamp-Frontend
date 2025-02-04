@@ -22,7 +22,7 @@ const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 
 module.exports = (io) => {
 
-// Add a new order
+    // Add a new order
     router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
         const { address, description, workTime, proposedSum, type } = req.body;
         const userId = req.user.id;
@@ -66,11 +66,11 @@ module.exports = (io) => {
         }
     });
 
-// Get all orders
+    // Get all orders
     router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
-            attributes: ['id', 'address', 'description', 'workTime','photoUrl' ,'proposedSum','creatorId' ,'coordinates', 'type'],
+            attributes: ['id', 'address', 'description', 'workTime','photoUrl' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
             where: { status: 'pending' },
         });
         res.json(orders);
@@ -80,7 +80,7 @@ module.exports = (io) => {
     }
 });
 
-// Get active orders
+    // Get active orders
     router.get('/active-orders', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -97,7 +97,7 @@ module.exports = (io) => {
     }
 });
 
-// Get order by ID
+    // Get order by ID
     router.get('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const currentUserId = req.user.id;
@@ -126,36 +126,119 @@ module.exports = (io) => {
     }
 });
 
-// Take an order
-    router.post('/:id/take', authenticateToken, async (req, res) => {
-    const { id } = req.params;
-    const executorId = req.user.id;
+    // Get request for order
+    router.post('/:id/request', authenticateToken, async (req, res) => {
+        const { id } = req.params;
+        const executorId = req.user.id;
 
-    try {
-        const order = await Order.findByPk(id);
+        try {
+            const order = await Order.findByPk(id);
 
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            if (!order) {
+                return res.status(404).json({ message: 'Заказ не найден' });
+            }
+
+            if (order.status !== 'pending') {
+                return res.status(400).json({ message: 'Заказ недоступен' });
+            }
+
+            if (order.executorId) {
+                return res.status(400).json({ message: 'Исполнитель уже назначен' });
+            }
+
+            // Назначаем исполнителя, но не переводим в active
+            order.executorId = executorId;
+            await order.save();
+
+            io.emit('orderRequested', { orderId: order.id, creatorId: order.creatorId });
+
+            res.json({ message: 'Запрос на выполнение отправлен заказчику', order });
+        } catch (error) {
+            console.error('Ошибка при запросе заказа:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
         }
+    });
 
-        if (order.status !== 'pending') {
-            return res.status(400).json({ message: 'Order is not available' });
+    //Get approve for order
+    router.post('/:id/approve', authenticateToken, async (req, res) => {
+        const { id } = req.params;
+
+        try {
+            console.log(`⚡ Одобрение заказа ID: ${id} пользователем ID: ${req.user.id}`);
+
+            const order = await Order.findByPk(id);
+
+            if (!order) {
+                console.log('❌ Заказ не найден');
+
+                return res.status(404).json({ message: 'Заказ не найден' });
+            }
+
+            if (order.creatorId !== req.user.id) {
+                console.log('❌ Попытка одобрения чужого заказа');
+
+                return res.status(403).json({ message: 'Вы не можете одобрить этот заказ' });
+            }
+
+            if (!order.executorId) {
+                console.log('❌ Нет исполнителя');
+
+                return res.status(400).json({ message: 'Нет исполнителя, ожидающего одобрения' });
+            }
+
+            order.status = 'active';
+            await order.save();
+            console.log(`✅ Заказ ${order.id} одобрен!`);
+
+
+            io.emit('orderUpdated'); // Обновление списка заказов
+            // Уведомляем исполнителя
+            io.to(`user_${order.executorId}`).emit('orderApproved', {
+                orderId: order.id,
+                message: 'Ваш запрос на выполнение заказа одобрен!',
+            });
+
+
+            res.json({ message: 'Заказ одобрен!', order });
+        } catch (error) {
+            console.error('❌ Ошибка при одобрении заказа:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
         }
+    });
 
-        order.executorId = executorId;
-        order.status = 'active';
-        await order.save();
+    //Get reject for order
+    router.post('/:id/reject', authenticateToken, async (req, res) => {
+        const { id } = req.params;
 
-        io.emit('orderUpdated'); // Обновление списка заказов
+        try {
+            const order = await Order.findByPk(id);
 
-        res.json({ message: 'Order taken', order });
-    } catch (error) {
-        console.error('Error taking order:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+            if (!order) {
+                return res.status(404).json({ message: 'Заказ не найден' });
+            }
 
-// Complete an order
+            if (order.creatorId !== req.user.id) {
+                return res.status(403).json({ message: 'Вы не можете отклонить этот заказ' });
+            }
+
+            if (!order.executorId) {
+                return res.status(400).json({ message: 'Нет исполнителя для отклонения' });
+            }
+
+            // Убираем исполнителя и оставляем заказ доступным
+            order.executorId = null;
+            await order.save();
+
+            io.emit('orderUpdated');
+
+            res.json({ message: 'Исполнитель отклонён', order });
+        } catch (error) {
+            console.error('Ошибка при отклонении заказа:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    });
+
+    // Complete an order
     router.post("/complete/:id", authenticateToken, async (req, res) => {
         try {
             const orderId = req.params.id;

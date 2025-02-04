@@ -26,7 +26,12 @@ const io = socketIo(server, {
 let users = {}; // Храним пользователей, которые подключились к WebSocket
 
 io.on('connection', (socket) => {
-    console.log('Новое подключение:', socket.id);
+    console.log(`🟢 Новое подключение: ${socket.id}`);
+
+    socket.on('register', (userId) => {
+        console.log(`✅ Пользователь ${userId} зарегистрирован в WebSocket`);
+        socket.join(`user_${userId}`); // Теперь WebSocket знает, кто заказчик
+    });
 
     // Событие при заходе пользователя (например, присоединение к чату)
     socket.on('joinChat', ({ userId }) => {
@@ -46,7 +51,7 @@ io.on('connection', (socket) => {
 
     // Отключение пользователя
     socket.on('disconnect', () => {
-        console.log('Пользователь отключился:', socket.id);
+        console.log(`🔴 Отключение: ${socket.id}`);
         Object.keys(users).forEach(userId => {
             if (users[userId] === socket.id) {
                 delete users[userId];
