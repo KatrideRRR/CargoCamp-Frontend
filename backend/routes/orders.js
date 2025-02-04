@@ -150,7 +150,8 @@ module.exports = (io) => {
             order.executorId = executorId;
             await order.save();
 
-            io.emit('orderRequested', { orderId: order.id, creatorId: order.creatorId });
+            io.emit('orderRequested',
+                { orderId: order.id, creatorId: order.creatorId, executorId: order.executorId });
 
             res.json({ message: 'Запрос на выполнение отправлен заказчику', order });
         } catch (error) {
