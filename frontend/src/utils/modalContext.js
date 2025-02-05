@@ -9,6 +9,7 @@ const socket = io('http://localhost:5000'); // Подключаем WebSocket
 export const ModalProvider = ({ children }) => {
     const [modalData, setModalData] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [notificationData, setNotificationData] = useState(null); // Для уведомлений исполнителю
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -44,7 +45,11 @@ export const ModalProvider = ({ children }) => {
             socket.on('orderApproved', (data) => {
                 console.log("🔔 Заказ одобрен:", data);
                 if (data.message.includes("Ваш запрос")) {
-                    alert(data.message); // Уведомление для исполнителя
+                    setNotificationData({
+                        title: "Ваш запрос одобрен!",
+                        description: data.message,
+                        onClose: () => setNotificationData(null), // Закрыть уведомление
+                    });
                 }
             });
 
@@ -92,6 +97,15 @@ export const ModalProvider = ({ children }) => {
                     <p>{modalData.description}</p>
                     <button onClick={modalData.onConfirm}>Одобрить</button>
                     <button onClick={modalData.onCancel}>Отклонить</button>
+                </div>
+            )}
+
+            {/* Уведомление для исполнителя в виде модала */}
+            {notificationData && (
+                <div className="modal">
+                    <h2>{notificationData.title}</h2>
+                    <p>{notificationData.description}</p>
+                    <button onClick={notificationData.onClose}>Закрыть</button>
                 </div>
             )}
         </ModalContext.Provider>
