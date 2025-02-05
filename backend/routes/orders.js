@@ -160,7 +160,7 @@ module.exports = (io) => {
         }
     });
 
-// Get approve for order
+    // Get approve for order
     router.post('/:id/approve', authenticateToken, async (req, res) => {
         const { id } = req.params;
 
@@ -211,7 +211,6 @@ module.exports = (io) => {
         }
     });
 
-
     //Get reject for order
     router.post('/:id/reject', authenticateToken, async (req, res) => {
         const { id } = req.params;
@@ -260,6 +259,25 @@ module.exports = (io) => {
 
             // Добавляем пользователя в массив `completedBy`
             order.completedBy = [...order.completedBy, userId];
+
+            // Проверьте, если заказчик подтвердил завершение
+            if (order.completedBy.includes(order.creatorId) && !order.completedBy.includes(order.executorId)) {
+                // Уведомление исполнителю
+                io.to(`user_${order.executorId}`).emit('orderCompleted', {
+                    orderId: order.id,
+                    message: 'Заказчик предложил завершить заказ',
+                });
+            }
+
+            // Проверьте, если исполнитель подтвердил завершение
+            if (order.completedBy.includes(order.executorId) && !order.completedBy.includes(order.creatorId)) {
+                // Уведомление заказчику
+                io.to(`user_${order.creatorId}`).emit('orderCompleted', {
+                    orderId: order.id,
+                    message: 'Исполнитель предложил завершить заказ',
+                });
+            }
+
 
             // Если оба участника подтвердили, устанавливаем статус "completed"
             if (order.completedBy.includes(order.creatorId) && order.completedBy.includes(order.executorId)) {

@@ -10,6 +10,7 @@ export const ModalProvider = ({ children }) => {
     const [modalData, setModalData] = useState(null);
     const [userId, setUserId] = useState(null);
     const [notificationData, setNotificationData] = useState(null); // Для уведомлений исполнителю
+    const [completionNotificationData, setCompletionNotificationData] = useState(null); // Уведомление по завершению заказа
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -53,9 +54,23 @@ export const ModalProvider = ({ children }) => {
                 }
             });
 
+            // Слушаем уведомления о завершении заказа
+            socket.on('orderCompleted', (data) => {
+                console.log("🔔 Уведомление о завершении заказа:", data);
+
+                if (data.message) {
+                    setCompletionNotificationData({
+                        title: "Ожидание завершения заказа",
+                        description: data.message,
+                        onClose: () => setCompletionNotificationData(null), // Закрыть уведомление
+                    });
+                }
+            });
+
             return () => {
                 socket.off('orderRequested');
                 socket.off('orderApproved');
+                socket.off('orderCompleted');
             };
         }
     }, [userId]);
@@ -91,6 +106,8 @@ export const ModalProvider = ({ children }) => {
     return (
         <ModalContext.Provider value={{ openModal, closeModal }}>
             {children}
+
+            {/* Основное модальное окно */}
             {modalData && (
                 <div className="modal">
                     <h2>{modalData.title}</h2>
@@ -106,6 +123,16 @@ export const ModalProvider = ({ children }) => {
                     <h2>{notificationData.title}</h2>
                     <p>{notificationData.description}</p>
                     <button onClick={notificationData.onClose}>Закрыть</button>
+                </div>
+            )}
+
+
+            {/* Уведомление о завершении заказа */}
+            {completionNotificationData && (
+                <div className="modal">
+                    <h2>{completionNotificationData.title}</h2>
+                    <p>{completionNotificationData.description}</p>
+                    <button onClick={completionNotificationData.onClose}>Закрыть</button>
                 </div>
             )}
         </ModalContext.Provider>
