@@ -15,7 +15,7 @@ export const ModalProvider = ({ children }) => {
             try {
                 const response = await axiosInstance.get('/auth/profile');
                 setUserId(response.data.id);
-                socket.emit('register', response.data.id);
+                socket.emit('register', response.data.id); // Регистрация пользователя на сокете
             } catch (error) {
                 console.error("❌ Ошибка загрузки профиля:", error);
             }
@@ -26,6 +26,7 @@ export const ModalProvider = ({ children }) => {
         if (userId) {
             console.log("🔄 Подключаем WebSocket для пользователя:", userId);
 
+            // Слушаем события для заказчика
             socket.on('orderRequested', (data) => {
                 console.log("🔔 Получен запрос на выполнение заказа:", data);
 
@@ -39,8 +40,17 @@ export const ModalProvider = ({ children }) => {
                 }
             });
 
+            // Слушаем уведомления для исполнителя
+            socket.on('orderApproved', (data) => {
+                console.log("🔔 Заказ одобрен:", data);
+                if (data.message.includes("Ваш запрос")) {
+                    alert(data.message); // Уведомление для исполнителя
+                }
+            });
+
             return () => {
                 socket.off('orderRequested');
+                socket.off('orderApproved');
             };
         }
     }, [userId]);

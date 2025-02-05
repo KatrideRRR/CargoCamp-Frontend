@@ -1,5 +1,4 @@
 const socketIo = require('socket.io');
-
 let io;
 let users = {}; // Храним пользователей, подключившихся к WebSocket
 
@@ -14,11 +13,13 @@ function initializeSocket(server) {
     io.on('connection', (socket) => {
         console.log(`🟢 Новое подключение: ${socket.id}`);
 
+        // Регистрация пользователя в сокетах
         socket.on('register', (userId) => {
             console.log(`✅ Пользователь ${userId} зарегистрирован в WebSocket`);
-            socket.join(`user_${userId}`); // Теперь WebSocket знает, кто заказчик
+            socket.join(`user_${userId}`); // Пользователь подключается к комнате с его ID
         });
 
+        // Прочие события, например, для чатов
         socket.on('joinChat', ({ userId }) => {
             users[userId] = socket.id;
             console.log(`Пользователь ${userId} подключился: ${socket.id}`);
@@ -45,6 +46,7 @@ function initializeSocket(server) {
     return io;
 }
 
+// Функция для отправки уведомлений заказчику и исполнителю
 function sendNotification(userId, event, data) {
     if (io) {
         io.to(`user_${userId}`).emit(event, data);

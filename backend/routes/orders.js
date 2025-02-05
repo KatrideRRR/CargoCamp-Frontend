@@ -160,7 +160,7 @@ module.exports = (io) => {
         }
     });
 
-    //Get approve for order
+// Get approve for order
     router.post('/:id/approve', authenticateToken, async (req, res) => {
         const { id } = req.params;
 
@@ -171,34 +171,38 @@ module.exports = (io) => {
 
             if (!order) {
                 console.log('❌ Заказ не найден');
-
                 return res.status(404).json({ message: 'Заказ не найден' });
             }
 
             if (order.creatorId !== req.user.id) {
                 console.log('❌ Попытка одобрения чужого заказа');
-
                 return res.status(403).json({ message: 'Вы не можете одобрить этот заказ' });
             }
 
             if (!order.executorId) {
                 console.log('❌ Нет исполнителя');
-
                 return res.status(400).json({ message: 'Нет исполнителя, ожидающего одобрения' });
             }
 
+            // Изменение статуса заказа
             order.status = 'active';
             await order.save();
             console.log(`✅ Заказ ${order.id} одобрен!`);
 
+            // Обновление списка заказов
+            io.emit('orderUpdated');
 
-            io.emit('orderUpdated'); // Обновление списка заказов
             // Уведомляем исполнителя
             io.to(`user_${order.executorId}`).emit('orderApproved', {
                 orderId: order.id,
                 message: 'Ваш запрос на выполнение заказа одобрен!',
             });
 
+            // Уведомляем заказчика
+            io.to(`user_${order.creatorId}`).emit('orderApproved', {
+                orderId: order.id,
+                message: 'Вы успешно одобрили заказ!',
+            });
 
             res.json({ message: 'Заказ одобрен!', order });
         } catch (error) {
@@ -206,6 +210,7 @@ module.exports = (io) => {
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     });
+
 
     //Get reject for order
     router.post('/:id/reject', authenticateToken, async (req, res) => {

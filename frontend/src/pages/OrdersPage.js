@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import '../styles/OrdersPage.css';
 import io from 'socket.io-client';
-import { ModalContext } from '../utils/modalContext';
 
 const socket = io('http://localhost:5000');
 
@@ -11,8 +9,6 @@ const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
-    const navigate = useNavigate();
-    const { openModal, closeModal } = useContext(ModalContext);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -44,10 +40,7 @@ const OrdersPage = () => {
 
             socket.on('orderRequested', (data) => {
                 console.log("🔔 Получен запрос на заказ:", data);
-
-
             });
-
             socket.on('orderUpdated', fetchOrders);
 
             return () => {
@@ -64,27 +57,6 @@ const OrdersPage = () => {
         } catch (error) {
             console.error("Ошибка при запросе на выполнение заказа:", error);
             alert(error.response?.data?.message || "Не удалось отправить запрос");
-        }
-    };
-
-    const handleApproveOrder = async (orderId) => {
-        try {
-            await axiosInstance.post(`/orders/${orderId}/approve`);
-            closeModal();
-            navigate('/active-orders');
-        } catch (error) {
-            console.error("❌ Ошибка при одобрении заказа:", error);
-            alert(error.response?.data?.message || "Не удалось одобрить заказ");
-        }
-    };
-
-    const handleRejectOrder = async (orderId) => {
-        try {
-            await axiosInstance.post(`/orders/${orderId}/reject`);
-            closeModal();
-        } catch (error) {
-            console.error("Ошибка при отклонении исполнителя:", error);
-            alert(error.response?.data?.message || "Не удалось отклонить исполнителя");
         }
     };
 

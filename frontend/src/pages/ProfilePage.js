@@ -112,7 +112,6 @@ const ProfilePage = () => {
                         <button onClick={handleLogout} className="logout-button">
                             Выйти
                         </button>
-                        <button onClick={() => openModal(<p>Это всплывающее окно!</p>)}>Открыть модалку</button>
                     </>
                 ) : (
                     <p className="info">Загрузка данных профиля...</p>
