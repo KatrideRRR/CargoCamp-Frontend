@@ -7,6 +7,7 @@ import '../styles/ProfilePage.css';  // Импортируем CSS файл
 
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true); // Статус загрузки
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { logout, isAuthenticated } = useAuth();
@@ -33,12 +34,13 @@ const ProfilePage = () => {
 
                 if (isMounted) {
                     setProfile(response.data);
+                    setLoading(false);  // Данные загружены
                 }
-                navigate('/profile');
             } catch (err) {
                 console.error('Ошибка:', err.response?.status, err.message);
                 if (isMounted) {
                     setError('Не удалось загрузить данные профиля.');
+                    setLoading(false);  // Ошибка при загрузке
                     navigate('/login');
                 }
             }
@@ -60,6 +62,10 @@ const ProfilePage = () => {
         navigate('/upload-documents');
     };
 
+    if (loading) {
+        return <div className="loading-container">Загрузка данных профиля...</div>;
+    }
+
     if (error) {
         return (
             <div className="error-container">
@@ -70,6 +76,23 @@ const ProfilePage = () => {
 
     return (
         <div className="container">
+            <div className="section">
+                <h2 className="subtitle">Жалобы:</h2>
+                <p className="info">Количество жалоб: {profile.complaintsCount || 0}</p>
+                {profile.complaints && profile.complaints.length > 0 ? (
+                    <ul>
+                        {profile.complaints.map((complaint, index) => (
+                            <li key={index} className="complaint-item">
+                                <p><strong>Жалоба #{index + 1}:</strong> {complaint.complaintText}</p>
+                                <p>Дата: {new Date(complaint.date).toLocaleDateString()}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>Нет жалоб</p>
+                )}
+            </div>
+
             <div className="profile-container">
                 {profile ? (
                     <>

@@ -38,8 +38,15 @@ module.exports = (sequelize) => {
             ratingCount: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
-            }
-
+            },
+            complaintsCount: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
+            complaints: {
+                type: DataTypes.JSON,
+                defaultValue: [],
+            },
         },
         {
             sequelize,

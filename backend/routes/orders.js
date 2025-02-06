@@ -6,6 +6,7 @@ const authenticateToken = require('../middlewares/authenticateToken');
 const multer = require('multer');
 const { Op } = require('sequelize');
 const path = require('path');
+const { Sequelize } = require('sequelize');  // Импортируем Sequelize
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -296,6 +297,61 @@ module.exports = (io) => {
             res.status(500).json({ message: "Ошибка сервера" });
         }
     });
+
+    // Эндпоинт для отправки жалобы
+    router.post('/complain', authenticateToken, async (req, res) => {
+        const { orderId, complaintText } = req.body;
+        const userId = req.user?.id;
+
+        console.log('req.user:', req.user);
+        console.log('userId:', userId);
+
+        if (!userId) {
+            return res.status(400).json({ message: 'Невозможно извлечь userId из токена' });
+        }
+
+        try {
+            const order = await Order.findByPk(orderId);
+            if (!order) {
+                return res.status(404).json({ message: 'Заказ не найден' });
+            }
+
+            console.log('order:', order);
+            console.log('customerId:', order.creatorId, 'executorId:', order.executorId, 'userId:', userId);
+
+            let complainedUserId = null;
+            if (userId === order.creatorId) {
+                if (!order.executorId) {
+                    return res.status(400).json({ message: 'У заказа пока нет исполнителя' });
+                }
+                complainedUserId = order.executorId;
+            } else if (userId === order.executorId) {
+                complainedUserId = order.creatorId;
+            } else {
+                console.log(`❌ Ошибка: Пользователь ${userId} не является участником заказа`);
+                return res.status(403).json({ message: 'Вы не являетесь участником этого заказа' });
+            }
+
+            console.log(`Жалоба отправляется на userId: ${complainedUserId}`);
+
+            const complainedUser = await User.findByPk(complainedUserId);
+            const currentComplaints = complainedUser.complaints || [];
+            const updatedComplaints = [...currentComplaints, { userId, complaintText, date: new Date() }];
+
+            await User.update({
+                complaintsCount: (complainedUser.complaintsCount || 0) + 1,
+                complaints: updatedComplaints
+            }, { where: { id: complainedUserId } });
+
+            return res.status(200).json({ message: 'Жалоба отправлена успешно' });
+
+        } catch (error) {
+            console.error('Ошибка при отправке жалобы:', error);
+            return res.status(500).json({ message: 'Ошибка при отправке жалобы' });
+        }
+    });
+
+
 
     return router;
 };

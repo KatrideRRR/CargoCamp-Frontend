@@ -33,9 +33,12 @@ export const ModalProvider = ({ children }) => {
                 console.log("🔔 Получен запрос на выполнение заказа:", data);
 
                 if (data.creatorId === userId) {
+                    // Получаем данные пользователя, который хочет взять заказ
+                    const executorData = data.executorId; // Получить информацию о пользователе, который хочет взять заказ
+
                     setModalData({
                         title: "Запрос на выполнение заказа",
-                        description: `Пользователь ${data.executorId} хочет выполнить ваш заказ.`,
+                        description: `Пользователь ${executorData} хочет выполнить ваш заказ. Номер заказа: ${data.orderId}`,
                         onConfirm: () => handleApproveOrder(data.orderId),
                         onCancel: () => handleRejectOrder(data.orderId),
                     });
@@ -46,9 +49,10 @@ export const ModalProvider = ({ children }) => {
             socket.on('orderApproved', (data) => {
                 console.log("🔔 Заказ одобрен:", data);
                 if (data.message.includes("Ваш запрос")) {
+                    // Добавляем информацию о заказе в уведомление для исполнителя
                     setNotificationData({
                         title: "Ваш запрос одобрен!",
-                        description: data.message,
+                        description: `Заказ номер ${data.orderId}: ${data.message}`,
                         onClose: () => setNotificationData(null), // Закрыть уведомление
                     });
                 }
@@ -61,7 +65,7 @@ export const ModalProvider = ({ children }) => {
                 if (data.message) {
                     setCompletionNotificationData({
                         title: "Ожидание завершения заказа",
-                        description: data.message,
+                        description: `Заказ номер ${data.orderId}: ${data.message}`,
                         onClose: () => setCompletionNotificationData(null), // Закрыть уведомление
                     });
                 }
@@ -125,7 +129,6 @@ export const ModalProvider = ({ children }) => {
                     <button onClick={notificationData.onClose}>Закрыть</button>
                 </div>
             )}
-
 
             {/* Уведомление о завершении заказа */}
             {completionNotificationData && (

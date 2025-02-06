@@ -15,6 +15,10 @@ const ActiveOrdersPage = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [rating, setRating] = useState(0);
+    const [showComplaintModal, setShowComplaintModal] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [complaintText, setComplaintText] = useState('');
+
 
 
     useEffect(() => {
@@ -58,8 +62,6 @@ const ActiveOrdersPage = () => {
         setShowRatingModal(true); // Показываем модальное окно для оценки
     };
 
-
-
     const submitRating = async () => {
         if (!selectedOrder || rating === 0) return;
 
@@ -97,6 +99,38 @@ const ActiveOrdersPage = () => {
         } catch (error) {
             console.error("Ошибка при завершении заказа или отправке рейтинга", error);
         }
+    };
+
+    const handleComplaint = (orderId) => {
+        setSelectedOrderId(orderId);
+        setShowComplaintModal(true);
+    };
+
+// Модальное окно для жалобы
+    const handleSubmitComplaint = async () => {
+        if (!complaintText) return;
+
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Вы не авторизованы!');
+            return;
+        }
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/orders/complain', {
+                orderId: selectedOrderId,
+                complaintText,
+            }, {
+                headers: { Authorization: `Bearer ${token}` }, // Убедитесь, что токен передается в заголовке
+            });
+            console.log(response);
+            alert('Жалоба отправлена');
+            setShowComplaintModal(false);
+            setComplaintText('');
+        } catch (error) {
+            console.error('Ошибка при отправке жалобы:', error);
+        }
+
     };
 
 
@@ -138,7 +172,27 @@ const ActiveOrdersPage = () => {
                                         <button className="message-button" onClick={() => navigate(`/messages/${order.id}`)}>Сообщение</button>
                                         <button className="route-button">Маршрут</button>
 
+                                        <div className="action-buttons">
+                                            <button className="call-button" onClick={() => window.open(`tel:${order.phone}`)}>Позвонить</button>
+                                            <button className="complain-button" onClick={() => handleComplaint(order.id)}>
+                                                Пожаловаться
+                                            </button>
 
+                                            {/* Модальное окно для жалобы */}
+                                            {showComplaintModal && selectedOrderId === order.id && (
+                                                <div className="modal">
+                                                    <h2>Напишите свою жалобу:</h2>
+                                                    <textarea
+                                                        value={complaintText}
+                                                        onChange={(e) => setComplaintText(e.target.value)}
+                                                        rows="5"
+                                                        placeholder="Введите текст жалобы"
+                                                    />
+                                                    <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
+                                                    <button onClick={() => setShowComplaintModal(false)}>Закрыть</button>
+                                                </div>
+                                            )}
+                                        </div>
                                         {isCompletedByUser ? (
                                             isWaitingForOther ? (
                                                 <>

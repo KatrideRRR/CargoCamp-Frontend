@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
-            attributes: ['id', 'username', 'phone', 'rating', 'createdAt'],
+            attributes: ['id', 'username', 'phone', 'rating', 'createdAt','complaints','complaintsCount'],
         });
 
         if (!user) {
