@@ -29,11 +29,16 @@ function CreateOrderPage({ currentUserId }) {
     const navigate = useNavigate();
     const [suggestions, setSuggestions] = useState([]);
     const currentDate = new Date(); // Текущая дата и время
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]); // Состояние для хранения выбранных изображений
 
-    const handleImageChange = (e) => {
-        setImage(e.target.files[0]);
+    const handleImageChange = (event) => {
+        const files = event.target.files;
+        setImages(Array.from(files)); // Преобразуем FileList в массив
     };
+    ;
+
+
+
 
     const getMinTime = (selectedDate) => {
         if (!selectedDate || selectedDate.toDateString() === currentDate.toDateString()) {
@@ -101,23 +106,25 @@ function CreateOrderPage({ currentUserId }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Создаем FormData
         const data = new FormData();
-        Object.keys(formData).forEach((key) => {
-            data.append(key, formData[key]);
-        });
-        if (image) {
-            data.append('image', image); // Добавляем фото
-        }
 
-        const form = new FormData();
-        form.append("userId", currentUserId);
-        form.append("description", formData.description);
-        form.append("address", formData.address);
-        form.append("workTime", formData.workTime);
-        form.append("photo", formData.photo);
-        form.append("proposedSum", formData.proposedSum);
-        form.append("coordinates", markerPosition.join(","));
-        form.append("type", formData.type);
+        // Добавляем все поля из formData в FormData
+        Object.keys(formData).forEach((key) => {
+            if (key !== "images") {
+                data.append(key, formData[key]);
+            }
+        });
+
+        // Добавляем изображения, если они есть
+        images.forEach((image) => {
+            data.append("images", image); // добавляем изображения в FormData
+        });
+
+        // Добавляем координаты на карту
+        if (markerPosition) {
+            data.append("coordinates", markerPosition.join(","));
+        }
 
         const token = localStorage.getItem("authToken");
         if (!token) {
@@ -126,7 +133,7 @@ function CreateOrderPage({ currentUserId }) {
         }
 
         try {
-            await axios.post("http://localhost:5000/api/orders/",data,{
+            await axios.post("http://localhost:5000/api/orders/", data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "multipart/form-data",
@@ -139,6 +146,7 @@ function CreateOrderPage({ currentUserId }) {
             setError("Не удалось создать заказ. Попробуйте снова.");
         }
     };
+
 
     const handleDescriptionChange = (e) => {
         const textarea = e.target;
@@ -260,15 +268,39 @@ function CreateOrderPage({ currentUserId }) {
                                 />
                             </div>
                         </div>
-                        <input type="file" accept="image/*" onChange={handleImageChange} required /> {/* Поле для фото */}
-                        <button type="submit" className="submit-button">
-                            Создать заказ
-                        </button>
-                    </form>
+                        {/* Заголовок для изображения */}
+                        <div>
+                            <label>Добавить изображения</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                        </div>
+
+                        {/* Отображение предварительного просмотра изображений */}
+                        <div className="image-preview">
+                            {images.length > 0 ? (
+                                images.map((image, index) => (
+                                    <img key={index} src={URL.createObjectURL(image)} alt={`Preview ${index + 1}`}
+                                         className="image-preview-item"/>
+                                ))
+                            ) : (
+                                <p>Изображения не выбраны</p>
+                            )}
+
+
                 </div>
-            </div>
-        </YMaps>
-    );
+                <button type="submit" className="submit-button">
+                    Создать заказ
+                </button>
+            </form>
+        </div>
+</div>
+</YMaps>
+)
+    ;
 }
 
 export default CreateOrderPage;

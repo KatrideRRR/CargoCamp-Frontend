@@ -29,6 +29,20 @@
     flex-direction: column;
     gap: 1.5rem;
 }
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.image-preview-item {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
 
 /* Мобильная версия: настройка отступов */
 @media (max-width: 768px) {

@@ -30,10 +30,6 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },
-            photoUrl: {
-                type: DataTypes.STRING,
-                allowNull: true,
-            },
             coordinates: {
                 type: DataTypes.STRING,
                 allowNull: true,
@@ -66,9 +62,18 @@ module.exports = (sequelize) => {
                 type: DataTypes.JSON,
                 allowNull: false,
                 defaultValue: [],
-            }
-
-
+            },
+            images: {
+                type: DataTypes.TEXT, // Храним массив ссылок в виде строки JSON
+                allowNull: true,
+                get() {
+                    const value = this.getDataValue("images");
+                    return value ? JSON.parse(value) : [];
+                },
+                set(value) {
+                    this.setDataValue("images", JSON.stringify(value));
+                },
+            },
 
         },
         {

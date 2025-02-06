@@ -79,21 +79,29 @@ const OrdersPage = () => {
                                         <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                         <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                     </div>
-                                    {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>)}
+
+                                    {Array.isArray(order.images) && order.images.length > 0 ? (
+                                        order.images.map((image, index) => {
+                                            // Формируем полный путь к изображению
+                                            const imageUrl = `http://localhost:5000${image}`; // Добавляем домен и относительный путь
+                                            return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`} className="order-image" />;
+                                        })
+                                    ) : (
+                                        <p>Изображений нет</p>
+                                    )}
+
 
                                 </div>
                                 {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
                                     <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
                                 )}
                             </li>
-
                         ))}
                     </ul>
                 ) : (
                     <p className="no-orders">Нет доступных заказов.</p> // Сообщение, если заказов нет
                 )}
             </div>
-
         </div>
     );
 };

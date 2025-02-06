@@ -23,7 +23,7 @@ const geocoder = NodeGeocoder({ provider: 'openstreetmap' });
 module.exports = (io) => {
 
     // Add a new order
-    router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
+    router.post('/', authenticateToken, upload.array('images', 5), async (req, res) => {  // 'images' — это поле для загрузки
         const { address, description, workTime, proposedSum, type } = req.body;
         const userId = req.user.id;
 
@@ -38,11 +38,11 @@ module.exports = (io) => {
                 return res.status(404).json({ message: 'Адрес не найден' });
             }
 
-            // Берем координаты из первого результата геокодинга
             const { latitude, longitude } = geoData[0];
             const coordinates = `${latitude},${longitude}`;
 
-            const photoUrl = req.file ? `/uploads/orders/${req.file.filename}` : null;
+            // Собираем все фото в массив
+            const photoUrls = req.files ? req.files.map(file => `/uploads/orders/${file.filename}`) : [];
 
             const newOrder = await Order.create({
                 userId,
@@ -50,9 +50,9 @@ module.exports = (io) => {
                 description,
                 workTime,
                 proposedSum,
-                coordinates, // Теперь координаты корректные!
+                coordinates,
                 type,
-                photoUrl,
+                images: photoUrls,  // Сохраняем массив ссылок на фото
                 creatorId: userId,
                 status: 'pending',
             });
@@ -70,7 +70,7 @@ module.exports = (io) => {
     router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
-            attributes: ['id', 'address', 'description', 'workTime','photoUrl' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
+            attributes: ['id', 'address', 'description', 'workTime','images' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
             where: { status: 'pending' },
         });
         res.json(orders);
