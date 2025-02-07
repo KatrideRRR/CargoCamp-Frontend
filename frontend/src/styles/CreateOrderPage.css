@@ -69,6 +69,67 @@
     }
 }
 
+/* Контейнер для кнопки загрузки изображений */
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Скрываем стандартный input file */
+.file-input {
+    display: none;
+}
+
+/* Стили для кастомной кнопки загрузки */
+.file-input-label {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #0077ff;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.file-input-label:hover {
+    background-color: #005bb5;
+}
+
+/* Область предпросмотра изображений */
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+/* Отдельное изображение в предпросмотре */
+.image-preview-item {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 2px solid #dcdcdc;
+    transition: transform 0.2s ease-in-out;
+}
+
+.image-preview-item:hover {
+    transform: scale(1.05);
+}
+
+/* Сообщение при отсутствии изображений */
+.no-image-text {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+
 
 /* Группа ввода */
 .input-group {

@@ -268,18 +268,22 @@ function CreateOrderPage({ currentUserId }) {
                                 />
                             </div>
                         </div>
-                        {/* Заголовок для изображения */}
-                        <div>
-                            <label>Добавить изображения</label>
+                        {/* Блок загрузки изображений */}
+                        <div className="file-upload-container">
+                            <label htmlFor="file-input" className="file-input-label">
+                                Загрузить изображения
+                            </label>
                             <input
+                                id="file-input"
                                 type="file"
+                                className="file-input"
                                 multiple
                                 accept="image/*"
                                 onChange={handleImageChange}
                             />
                         </div>
 
-                        {/* Отображение предварительного просмотра изображений */}
+                        {/* Область предпросмотра загруженных изображений */}
                         <div className="image-preview">
                             {images.length > 0 ? (
                                 images.map((image, index) => (
@@ -287,11 +291,10 @@ function CreateOrderPage({ currentUserId }) {
                                          className="image-preview-item"/>
                                 ))
                             ) : (
-                                <p>Изображения не выбраны</p>
+                                <p className="no-image-text">Изображения не выбраны</p>
                             )}
+                        </div>
 
-
-                </div>
                 <button type="submit" className="submit-button">
                     Создать заказ
                 </button>
