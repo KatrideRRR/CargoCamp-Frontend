@@ -25,25 +25,41 @@ export const ModalProvider = ({ children }) => {
 
         fetchUserData();
 
+        const fetchExecutorData = async (executorId) => {
+            try {
+                const response = await axiosInstance.get(`/auth/${executorId}`);
+                return response.data;
+            } catch (error) {
+                console.error("❌ Ошибка загрузки данных исполнителя:", error);
+                return null;
+            }
+        };
+
+
         if (userId) {
             console.log("🔄 Подключаем WebSocket для пользователя:", userId);
 
             // Слушаем события для заказчика
-            socket.on('orderRequested', (data) => {
+            socket.on('orderRequested', async (data) => {
                 console.log("🔔 Получен запрос на выполнение заказа:", data);
 
                 if (data.creatorId === userId) {
-                    // Получаем данные пользователя, который хочет взять заказ
-                    const executorData = data.executorId; // Получить информацию о пользователе, который хочет взять заказ
+                    const executorInfo = await fetchExecutorData(data.executorId);
 
-                    setModalData({
-                        title: "Запрос на выполнение заказа",
-                        description: `Пользователь ${executorData} хочет выполнить ваш заказ. Номер заказа: ${data.orderId}`,
-                        onConfirm: () => handleApproveOrder(data.orderId),
-                        onCancel: () => handleRejectOrder(data.orderId),
-                    });
+                    if (executorInfo) {
+                        setModalData({
+                            title: "Запрос на выполнение заказа",
+                            description: `Пользователь ${executorInfo.username} хочет выполнить ваш заказ. 
+                              📊 Рейтинг: ${executorInfo.rating || "Нет данных"} ⭐
+                              🚨 Жалобы: ${executorInfo.complaintsCount || 0}
+                              Номер заказа: ${data.orderId}`,
+                            onConfirm: () => handleApproveOrder(data.orderId),
+                            onCancel: () => handleRejectOrder(data.orderId),
+                        });
+                    }
                 }
             });
+
 
             // Слушаем уведомления для исполнителя
             socket.on('orderApproved', (data) => {

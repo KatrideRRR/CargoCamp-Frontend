@@ -160,21 +160,31 @@ const ActiveOrdersPage = () => {
 
                             return (
                                 <li key={order.id} className="order-card">
+                                    <p><strong>№ заказа:</strong> {order.id}</p>
                                     <p><strong>Тип:</strong> {order.type}</p>
                                     <p><strong>Описание:</strong> {order.description}</p>
                                     <p><strong>Адрес:</strong> {order.address}</p>
                                     <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                     <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                     <p><strong>ID исполнителя:</strong> {order.executorId}</p>
-                                    {order.photoUrl && (<img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа" className="order-photo"/>) }
+                                    {order.photoUrl && (
+                                        <img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа"
+                                             className="order-photo"/>)}
                                     <div className="action-buttons">
-                                        <button className="call-button" onClick={() => window.open(`tel:${order.phone}`)}>Позвонить</button>
-                                        <button className="message-button" onClick={() => navigate(`/messages/${order.id}`)}>Сообщение</button>
+                                        <button className="call-button"
+                                                onClick={() => window.open(`tel:${order.phone}`)}>Позвонить
+                                        </button>
+                                        <button className="message-button"
+                                                onClick={() => navigate(`/messages/${order.id}`)}>Сообщение
+                                        </button>
                                         <button className="route-button">Маршрут</button>
 
                                         <div className="action-buttons">
-                                            <button className="call-button" onClick={() => window.open(`tel:${order.phone}`)}>Позвонить</button>
-                                            <button className="complain-button" onClick={() => handleComplaint(order.id)}>
+                                            <button className="call-button"
+                                                    onClick={() => window.open(`tel:${order.phone}`)}>Позвонить
+                                            </button>
+                                            <button className="complain-button"
+                                                    onClick={() => handleComplaint(order.id)}>
                                                 Пожаловаться
                                             </button>
 
@@ -189,21 +199,25 @@ const ActiveOrdersPage = () => {
                                                         placeholder="Введите текст жалобы"
                                                     />
                                                     <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
-                                                    <button onClick={() => setShowComplaintModal(false)}>Закрыть</button>
+                                                    <button onClick={() => setShowComplaintModal(false)}>Закрыть
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
                                         {isCompletedByUser ? (
                                             isWaitingForOther ? (
                                                 <>
-                                                    <p>Ожидаем подтверждения {isCreator ? "исполнителя" : isExecutor ? "заказчика" : "второго участника"}</p>
-                                                    <button className="remove-button" onClick={() => handleRemoveOrder(order.id)}>
+                                                    <p>Ожидаем
+                                                        подтверждения {isCreator ? "исполнителя" : isExecutor ? "заказчика" : "второго участника"}</p>
+                                                    <button className="remove-button"
+                                                            onClick={() => handleRemoveOrder(order.id)}>
                                                         Удалить из активных
                                                     </button>
                                                 </>
                                             ) : null
                                         ) : (
-                                            <button className="complete-button" onClick={() => handleCompleteOrder(order.id)}>
+                                            <button className="complete-button"
+                                                    onClick={() => handleCompleteOrder(order.id)}>
                                                 Завершить
                                             </button>
                                         )}

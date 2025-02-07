@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const http = require('http');
+const jwt = require('jsonwebtoken');
 
 const { initializeSocket } = require('./socket'); // Импортируем инициализацию WebSocket
 const orderRoutes = require('./routes/orders');
@@ -28,6 +29,22 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
     logging: false,
+});
+
+app.post('/api/token', (req, res) => {
+    const { token } = req.body;
+
+    if (!token) return res.sendStatus(401);
+
+    // Проверяем refreshToken
+    jwt.verify(token, process.env.REFRESH_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+
+        // Создаём новый accessToken
+        const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+
+        res.json({ accessToken });
+    });
 });
 
 sequelize.authenticate()

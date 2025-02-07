@@ -109,6 +109,18 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера', error: err.message });
     }
 });
+router.get('/user/:id', async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id, {
+            attributes: ['id', 'username', 'rating', 'complaintsCount']
+        });
+        if (!user) return res.status(404).json({ message: "Пользователь не найден" });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 
 router.post("/rate", authenticateToken,async (req, res) => {
     try {

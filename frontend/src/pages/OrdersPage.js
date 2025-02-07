@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import '../styles/OrdersPage.css';
 import io from 'socket.io-client';
@@ -9,6 +9,7 @@ const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [creatorsInfo, setCreatorsInfo] = useState({}); // Данные о создателях заказов
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -16,6 +17,21 @@ const OrdersPage = () => {
                 const response = await axiosInstance.get('/orders/all');
                 console.log("📦 Загружены заказы:", response.data);
                 setOrders(response.data);
+
+                // Получаем данные о создателях заказов
+                const creatorIds = [...new Set(response.data.map(order => order.creatorId))]; // Уникальные ID создателей
+                const creatorsData = {};
+
+                for (const id of creatorIds) {
+                    try {
+                        const res = await axiosInstance.get(`/auth/${id}`);
+                        creatorsData[id] = res.data; // Сохраняем данные
+                    } catch (err) {
+                        console.error(`Ошибка загрузки данных пользователя ${id}`, err);
+                    }
+                }
+
+                setCreatorsInfo(creatorsData);
             } catch (err) {
                 setError(err.response?.data?.message || 'Ошибка загрузки заказов');
             }
@@ -69,37 +85,44 @@ const OrdersPage = () => {
             <div className="orders-wrapper">
                 {orders.length > 0 ? (
                     <ul className="orders-list">
-                        {orders.map((order) => (
-                            <li className="order-card" key={order.id}>
-                                <div className="order-content">
-                                    <div className="order-left">
-                                        <p className="order-type"><strong>Тип заказа:</strong> {order.type}</p>
-                                        <p className="order-description"><strong>Описание:</strong> {order.description}</p>
-                                        <p className="order-address"><strong>Адрес:</strong> {order.address}</p>
-                                        <p className="order-proposedSum"><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                        <p><strong>ID создателя:</strong> {order.creatorId}</p>
+                        {orders.map((order) => {
+                            const creator = creatorsInfo[order.creatorId] || {};
+
+                            return (
+                                <li className="order-card" key={order.id}>
+                                    <div className="order-content">
+                                        <div className="order-left">
+                                            <p><strong>№ заказа:</strong> {order.id}</p>
+                                            <p><strong>Тип заказа:</strong> {order.type}</p>
+                                            <p><strong>Описание:</strong> {order.description}</p>
+                                            <p><strong>Адрес:</strong> {order.address}</p>
+                                            <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                            <p><strong>Имя создателя:</strong> {creator.username || "Неизвестно"}</p>
+                                            <p><strong>ID создателя:</strong> {order.creatorId}</p>
+                                            <p><strong>Рейтинг
+                                                создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}
+                                            </p>
+                                            <p><strong>Жалобы на создателя:</strong> {creator.complaintsCount || 0}</p>
+                                        </div>
+
+                                        {Array.isArray(order.images) && order.images.length > 0 ? (
+                                            order.images.map((image, index) => {
+                                                const imageUrl = `http://localhost:5000${image}`;
+                                                return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`} className="order-image" />;
+                                            })
+                                        ) : (
+                                            <p>Изображений нет</p>
+                                        )}
                                     </div>
-
-                                    {Array.isArray(order.images) && order.images.length > 0 ? (
-                                        order.images.map((image, index) => {
-                                            // Формируем полный путь к изображению
-                                            const imageUrl = `http://localhost:5000${image}`; // Добавляем домен и относительный путь
-                                            return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`} className="order-image" />;
-                                        })
-                                    ) : (
-                                        <p>Изображений нет</p>
+                                    {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
+                                        <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
                                     )}
-
-
-                                </div>
-                                {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
-                                    <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
-                                )}
-                            </li>
-                        ))}
+                                </li>
+                            );
+                        })}
                     </ul>
                 ) : (
-                    <p className="no-orders">Нет доступных заказов.</p> // Сообщение, если заказов нет
+                    <p className="no-orders">Нет доступных заказов.</p>
                 )}
             </div>
         </div>
