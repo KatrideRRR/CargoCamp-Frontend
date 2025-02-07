@@ -1,0 +1,26 @@
+.complaints-container {
+    max-width: 800px;
+    margin: 70px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.complaints-container h1 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.complaints-list {
+    list-style: none;
+    padding: 0;
+}
+
+.complaint-item {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}

@@ -18,6 +18,7 @@ import { AuthProvider } from "./utils/authContext";
 import { UserProvider } from './utils/userContext';
 import { ModalProvider } from './utils/modalContext';
 import Modal from './components/Modal';
+import UserComplaintsPage from './components/UserComplaintsPage';
 
 const App = () => {
     return (
@@ -33,6 +34,7 @@ const App = () => {
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/profile" element={<ProfilePage />}/>
+                            <Route path="/complaints/:userId" element={<UserComplaintsPage />} />
                             <Route path="/special-orders" element={<SpecialOrdersPage />} />
                             <Route path="/active-orders" element={<ActiveOrdersPage />}/>
                             <Route path="/orders" element={<OrdersPage />} />
