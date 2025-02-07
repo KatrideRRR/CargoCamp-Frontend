@@ -104,20 +104,7 @@ const ProfilePage = () => {
                             <h2 className="subtitle">Рейтинг:</h2>
                             <p className="info">{profile.rating || 'Нет рейтинга'}</p>
                         </div>
-                        <div className="section">
-                            <h2 className="subtitle">История заказов:</h2>
-                            <ul className="order-list">
-                                {profile.orders && profile.orders.length > 0 ? (
-                                    profile.orders.map((order) => (
-                                        <li key={order.id} className="order-item">
-                                            {order.description} — {order.status || 'В ожидании'}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li className="info">Нет заказов</li>
-                                )}
-                            </ul>
-                        </div>
+
                         <div className="section">
                             <h2 className="subtitle">Верификация:</h2>
                             <p className="info">

@@ -23,10 +23,11 @@ import OrderHistoryPage from "./pages/OrderHistoryPage";
 
 const App = () => {
     return (
+        <Router>
+
         <ModalProvider>
         <AuthProvider>
             <UserProvider>
-                    <Router>
                         <Navbar />
                         <Modal />
                         <Routes>
@@ -44,10 +45,10 @@ const App = () => {
                             <Route path="/messages/:orderId" element={<ChatPage/>} />
                         </Routes>
                         <BottomMenu />
-                    </Router>
             </UserProvider>
         </AuthProvider>
         </ModalProvider>
+        </Router>
     );
 };
 

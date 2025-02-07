@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
+import { Link } from 'react-router-dom'; // Импортируем Link для навигации
 import '../styles/OrdersPage.css';
 import io from 'socket.io-client';
 
@@ -101,8 +102,7 @@ const OrdersPage = () => {
                                             <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                             <p><strong>Дата создания:</strong> {order.createdAt}</p>
                                             <p><strong>Рейтинг
-                                                создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}
-                                            </p>
+                                                создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}</p>
                                             <p><strong>Жалобы на создателя:</strong> {creator.complaintsCount || 0}</p>
                                         </div>
 
@@ -115,6 +115,14 @@ const OrdersPage = () => {
                                             <p>Изображений нет</p>
                                         )}
                                     </div>
+
+                                    {/* Кнопка для перехода на страницу жалоб для создателя */}
+                                    {creator.username && (
+                                        <Link to={`/complaints/${order.creatorId}`} className="complaints-button">
+                                            Перейти к жалобам
+                                        </Link>
+                                    )}
+
                                     {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
                                         <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
                                     )}

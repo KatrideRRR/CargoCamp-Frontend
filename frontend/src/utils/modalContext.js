@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axiosInstance from './axiosInstance';
+import { useNavigate } from 'react-router-dom'; // Используем useNavigate
 
 export const ModalContext = createContext();
 
@@ -11,6 +12,7 @@ export const ModalProvider = ({ children }) => {
     const [userId, setUserId] = useState(null);
     const [notificationData, setNotificationData] = useState(null); // Для уведомлений исполнителю
     const [completionNotificationData, setCompletionNotificationData] = useState(null); // Уведомление по завершению заказа
+    const navigate = useNavigate(); // Используем navigate для переходов
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,7 +37,6 @@ export const ModalProvider = ({ children }) => {
             }
         };
 
-
         if (userId) {
             console.log("🔄 Подключаем WebSocket для пользователя:", userId);
 
@@ -55,21 +56,21 @@ export const ModalProvider = ({ children }) => {
                               Номер заказа: ${data.orderId}`,
                             onConfirm: () => handleApproveOrder(data.orderId),
                             onCancel: () => handleRejectOrder(data.orderId),
+                            executorId: executorInfo.id, // Добавляем ID исполнителя для перехода на страницу жалоб
+                            orderId: data.orderId // Сохраняем ID заказа
                         });
                     }
                 }
             });
 
-
             // Слушаем уведомления для исполнителя
             socket.on('orderApproved', (data) => {
                 console.log("🔔 Заказ одобрен:", data);
                 if (data.message.includes("Ваш запрос")) {
-                    // Добавляем информацию о заказе в уведомление для исполнителя
                     setNotificationData({
                         title: "Ваш запрос одобрен!",
                         description: `Заказ номер ${data.orderId}: ${data.message}`,
-                        onClose: () => setNotificationData(null), // Закрыть уведомление
+                        onClose: () => setNotificationData(null),
                     });
                 }
             });
@@ -82,7 +83,7 @@ export const ModalProvider = ({ children }) => {
                     setCompletionNotificationData({
                         title: "Ожидание завершения заказа",
                         description: `Заказ номер ${data.orderId}: ${data.message}`,
-                        onClose: () => setCompletionNotificationData(null), // Закрыть уведомление
+                        onClose: () => setCompletionNotificationData(null),
                     });
                 }
             });
@@ -123,6 +124,11 @@ export const ModalProvider = ({ children }) => {
         }
     };
 
+    const handleGoToComplaints = (executorId, orderId) => {
+        // Используем navigate для перехода
+        navigate(`/complaints/${executorId}?orderId=${orderId}`);
+    };
+
     return (
         <ModalContext.Provider value={{ openModal, closeModal }}>
             {children}
@@ -134,6 +140,13 @@ export const ModalProvider = ({ children }) => {
                     <p>{modalData.description}</p>
                     <button onClick={modalData.onConfirm}>Одобрить</button>
                     <button onClick={modalData.onCancel}>Отклонить</button>
+
+                    {/* Кнопка для перехода к жалобам на исполнителя */}
+                    {modalData.executorId && (
+                        <button onClick={() => handleGoToComplaints(modalData.executorId, modalData.orderId)}>
+                            Перейти к жалобам на исполнителя
+                        </button>
+                    )}
                 </div>
             )}
 
