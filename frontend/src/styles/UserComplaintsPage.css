@@ -1,20 +1,29 @@
 .complaints-container {
     max-width: 800px;
-    margin: 70px;
+    width: 100%;
+    margin: 85px auto 50px auto; /* Отступ сверху для фиксации перекрытия */
     padding: 20px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрирование содержимого */
+    justify-content: center;
+    text-align: center;
 }
 
+/* Заголовок */
 .complaints-container h1 {
     font-size: 22px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .complaints-list {
     list-style: none;
     padding: 0;
+    width: 100%;
 }
 
 .complaint-item {
@@ -23,4 +32,19 @@
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 5px;
+    width: 98%;
+    text-align: left;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .complaints-container {
+        width: 90%; /* Уменьшаем ширину, чтобы контейнер не выходил за пределы экрана */
+        margin: 80px auto 20px auto; /* Центрирование и отступ сверху */
+        padding: 15px;
+        margin-bottom: 80px;
+    }
+    .complaint-item {
+        width: 95%;
+    }
 }

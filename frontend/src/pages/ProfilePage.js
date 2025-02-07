@@ -72,6 +72,14 @@ const ProfilePage = () => {
             navigate(`/orders-history/${profile.id}`);
         }
     };
+    // Функция рендера звездочек
+    const renderStars = (rating) => {
+        const maxStars = 5;
+        const fullStar = '★';
+        const emptyStar = '☆';
+        return fullStar.repeat(Math.round(rating)) + emptyStar.repeat(maxStars - Math.round(rating));
+    };
+
 
     if (loading) {
         return <div className="loading-container">Загрузка данных профиля...</div>;
@@ -102,7 +110,7 @@ const ProfilePage = () => {
                         </div>
                         <div className="section">
                             <h2 className="subtitle">Рейтинг:</h2>
-                            <p className="info">{profile.rating || 'Нет рейтинга'}</p>
+                            <p className="info rating">{profile.rating ? renderStars(profile.rating) : 'Нет рейтинга'}</p>
                         </div>
 
                         <div className="section">
