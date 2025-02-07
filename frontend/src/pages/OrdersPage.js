@@ -99,6 +99,7 @@ const OrdersPage = () => {
                                             <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                             <p><strong>Имя создателя:</strong> {creator.username || "Неизвестно"}</p>
                                             <p><strong>ID создателя:</strong> {order.creatorId}</p>
+                                            <p><strong>Дата создания:</strong> {order.createdAt}</p>
                                             <p><strong>Рейтинг
                                                 создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}
                                             </p>

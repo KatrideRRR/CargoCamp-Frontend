@@ -7,7 +7,7 @@ import '../styles/ProfilePage.css';  // Импортируем CSS файл
 
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true); // Статус загрузки
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { logout, isAuthenticated } = useAuth();
@@ -34,13 +34,13 @@ const ProfilePage = () => {
 
                 if (isMounted) {
                     setProfile(response.data);
-                    setLoading(false);  // Данные загружены
+                    setLoading(false);
                 }
             } catch (err) {
                 console.error('Ошибка:', err.response?.status, err.message);
                 if (isMounted) {
                     setError('Не удалось загрузить данные профиля.');
-                    setLoading(false);  // Ошибка при загрузке
+                    setLoading(false);
                     navigate('/login');
                 }
             }
@@ -54,12 +54,23 @@ const ProfilePage = () => {
     }, [isAuthenticated, navigate]);
 
     const handleLogout = () => {
-        logout(); // Удаляем токен и сбрасываем состояние авторизации
+        logout();
         navigate('/login');
     };
 
     const handleUploadDocuments = () => {
         navigate('/upload-documents');
+    };
+
+    const handleMyComplaints = () => {
+        if (profile) {
+            navigate(`/complaints/${profile.id}`);
+        }
+    };
+    const handleOrderHistory = () => {
+        if (profile) {
+            navigate(`/orders-history/${profile.id}`);
+        }
     };
 
     if (loading) {
@@ -76,22 +87,7 @@ const ProfilePage = () => {
 
     return (
         <div className="container">
-            <div className="section">
-                <h2 className="subtitle">Жалобы:</h2>
-                <p className="info">Количество жалоб: {profile.complaintsCount || 0}</p>
-                {profile.complaints && profile.complaints.length > 0 ? (
-                    <ul>
-                        {profile.complaints.map((complaint, index) => (
-                            <li key={index} className="complaint-item">
-                                <p><strong>Жалоба #{index + 1}:</strong> {complaint.complaintText}</p>
-                                <p>Дата: {new Date(complaint.date).toLocaleDateString()}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>Нет жалоб</p>
-                )}
-            </div>
+
 
             <div className="profile-container">
                 {profile ? (
@@ -99,6 +95,10 @@ const ProfilePage = () => {
                         <div className="section">
                             <h2 className="subtitle">Имя пользователя:</h2>
                             <p className="info">{profile.username}</p>
+                        </div>
+                        <div className="section">
+                            <h2 className="subtitle">ID пользователя:</h2>
+                            <p className="info">{profile.id}</p>
                         </div>
                         <div className="section">
                             <h2 className="subtitle">Рейтинг:</h2>
@@ -132,6 +132,17 @@ const ProfilePage = () => {
                                 </button>
                             )}
                         </div>
+
+                        {/* Кнопка "Мои жалобы" */}
+                        <button onClick={handleMyComplaints} className="complaints-button">
+                            Мои жалобы
+                        </button>
+                        {/* Кнопка "История заказов" */}
+                        <button onClick={handleOrderHistory} className="history-button">
+                            История заказов
+                        </button>
+
+
                         <button onClick={handleLogout} className="logout-button">
                             Выйти
                         </button>

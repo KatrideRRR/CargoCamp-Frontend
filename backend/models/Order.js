@@ -74,7 +74,16 @@ module.exports = (sequelize) => {
                     this.setDataValue("images", JSON.stringify(value));
                 },
             },
-
+            completedAt: {
+                type: DataTypes.DATE,
+                allowNull: true, // Поле может быть NULL, если заказ не завершен
+                defaultValue: null, // Значение по умолчанию - null
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: true, // Поле может быть NULL, если заказ не завершен
+                defaultValue: null, // Значение по умолчанию - null
+            },
         },
         {
             sequelize,

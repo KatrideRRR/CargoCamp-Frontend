@@ -53,6 +53,7 @@ module.exports = (io) => {
                 proposedSum,
                 coordinates,
                 type,
+                createdAt: new Date().toISOString(),
                 images: photoUrls,  // Сохраняем массив ссылок на фото
                 creatorId: userId,
                 status: 'pending',
@@ -71,7 +72,7 @@ module.exports = (io) => {
     router.get('/all', async (req, res) => {
     try {
         const orders = await Order.findAll({
-            attributes: ['id', 'address', 'description', 'workTime','images' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
+            attributes: ['id','createdAt', 'address', 'description', 'workTime','images' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
             where: { status: 'pending' },
         });
         res.json(orders);
@@ -283,9 +284,8 @@ module.exports = (io) => {
             // Если оба участника подтвердили, устанавливаем статус "completed"
             if (order.completedBy.includes(order.creatorId) && order.completedBy.includes(order.executorId)) {
                 order.status = "completed";
-                order.completedAt = new Date(); // Фиксируем дату завершения
             }
-
+            order.completedAt = new Date(); // Фиксируем дату завершения
             await order.save();
 
             io.emit('orderUpdated'); // Обновление списка заказов
@@ -350,6 +350,36 @@ module.exports = (io) => {
             return res.status(500).json({ message: 'Ошибка при отправке жалобы' });
         }
     });
+
+    router.get('/completed/:userId', async (req, res) => {
+        const { userId } = req.params;
+
+        console.log("userId из запроса:", userId); // Проверяем, приходит ли userId
+
+        if (!userId) {
+            return res.status(400).json({ message: 'Некорректный userId' });
+        }
+
+        try {
+            const completedOrders = await Order.findAll({
+                where: {
+                    status: 'completed',
+                    [Op.or]: [
+                        { creatorId: userId },  // Заказчик
+                        { executorId: userId }   // Исполнитель
+                    ]
+                },
+                attributes: ['id','type','address','proposedSum', 'status', 'completedAt', 'creatorId', 'executorId', 'description'], // Указываем, какие поля хотим вернуть
+            });
+
+            // Отправляем заказ с актуальной датой завершения
+            res.json(completedOrders);
+        } catch (error) {
+            console.error('Ошибка при получении завершенных заказов:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    });
+
 
 
 

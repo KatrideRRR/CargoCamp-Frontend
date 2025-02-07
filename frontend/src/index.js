@@ -19,6 +19,7 @@ import { UserProvider } from './utils/userContext';
 import { ModalProvider } from './utils/modalContext';
 import Modal from './components/Modal';
 import UserComplaintsPage from './components/UserComplaintsPage';
+import OrderHistoryPage from "./pages/OrderHistoryPage";
 
 const App = () => {
     return (
@@ -38,6 +39,7 @@ const App = () => {
                             <Route path="/special-orders" element={<SpecialOrdersPage />} />
                             <Route path="/active-orders" element={<ActiveOrdersPage />}/>
                             <Route path="/orders" element={<OrdersPage />} />
+                            <Route path="/orders-history/:userId" element={<OrderHistoryPage />} />
                             <Route path="/create-order" element={<CreateOrderPage />} />
                             <Route path="/messages/:orderId" element={<ChatPage/>} />
                         </Routes>
