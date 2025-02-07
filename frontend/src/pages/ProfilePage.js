@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../utils/authContext";
 import axios from "axios";
-import { ModalContext } from '../utils/modalContext';
 import '../styles/ProfilePage.css';  // Импортируем CSS файл
 
 const ProfilePage = () => {
@@ -11,7 +10,6 @@ const ProfilePage = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { logout, isAuthenticated } = useAuth();
-    const { openModal } = useContext(ModalContext);
 
     useEffect(() => {
         let isMounted = true;

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import axiosInstance from './axiosInstance';
+import axiosInstance from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom'; // Используем useNavigate
 
 export const ModalContext = createContext();
