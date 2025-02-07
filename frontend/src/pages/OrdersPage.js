@@ -101,9 +101,7 @@ const OrdersPage = () => {
                                             <p><strong>Имя создателя:</strong> {creator.username || "Неизвестно"}</p>
                                             <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                             <p><strong>Дата создания:</strong> {order.createdAt}</p>
-                                            <p><strong>Рейтинг
-                                                создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}</p>
-                                            <p><strong>Жалобы на создателя:</strong> {creator.complaintsCount || 0}</p>
+                                            <p><strong>Рейтинг создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}</p>
                                         </div>
 
                                         {Array.isArray(order.images) && order.images.length > 0 ? (
@@ -119,8 +117,7 @@ const OrdersPage = () => {
                                     {/* Кнопка для перехода на страницу жалоб для создателя */}
                                     {creator.username && (
                                         <Link to={`/complaints/${order.creatorId}`} className="complaints-button">
-                                            Перейти к жалобам
-                                        </Link>
+                                            Жалобы на создателя: {creator.complaintsCount || 0}                                       </Link>
                                     )}
 
                                     {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
