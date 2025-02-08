@@ -4,11 +4,9 @@
     justify-content: center;
     align-items: flex-start;
     margin: 2rem auto;
-    padding: 1rem;
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding-top: 6rem; /* Учитываем высоту Navbar */
     box-sizing: border-box; /* Для учета внутренних отступов */
 }
 
@@ -47,8 +45,9 @@
 /* Мобильная версия: настройка отступов */
 @media (max-width: 768px) {
     .container {
+        margin-top: 18rem;
         padding-top: 3rem; /* Уменьшенный отступ от navbar */
-        margin-bottom: 4rem; /* Дополнительный отступ для bottommenu */
+        margin-bottom: 18rem; /* Дополнительный отступ для bottommenu */
     }
 }
 

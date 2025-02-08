@@ -6,13 +6,15 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: center;
     box-sizing: border-box;
 }
 
 /* Ограничение ширины контента */
 .orders-wrapper {
     width: 100%;
-    max-width: 500px; /* Оптимальная ширина */
+    max-width: 600px; /* Ширина для лучшего отображения */
+    padding: 15px;
 }
 
 /* Список заказов */
@@ -25,143 +27,96 @@
 /* Карточка заказа */
 .order-card {
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-    padding: 14px;
-    margin-bottom: 14px;
-    border-left: 4px solid #007aff;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    margin-bottom: 20px;
+    border-left: 6px solid #007aff;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .order-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 /* Общий стиль для текста */
 .order-card p {
-    font-size: 15px;
+    font-size: 16px;
     color: #333;
-    margin: 6px 0;
+    margin: 8px 0;
+    line-height: 1.5;
 }
 
-/* Кнопки действий */
-.orders-wrapper .action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
+/* Заголовок для названия заказа */
+.order-card .order-left p strong {
+    font-weight: 700;
+    color: #333;
 }
 
-/* Общий стиль кнопок */
-.orders-wrapper .action-buttons button {
-    flex: 1;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 90px;
-}
-
-/* Индивидуальные стили кнопок */
-.orders-wrapper .call-button {
-    background-color: #005ecb;
-}
-
-.orders-wrapper .call-button:hover {
-    background-color: #004bb7;
-}
-
-.orders-wrapper .message-button {
-    background-color: #0275d8;
-}
-
-.orders-wrapper .message-button:hover {
-    background-color: #0256a3;
-}
-
-.orders-wrapper .route-button {
-    background-color: #e0a800;
-    color: #222;
-}
-
-.orders-wrapper .route-button:hover {
-    background-color: #c79200;
-}
-
-.orders-wrapper .complete-button {
-    background-color: #c82333;
-}
-
-.orders-wrapper .complete-button:hover {
-    background-color: #a71d2a;
-}
-
-/* Кнопка "Взять в работу" */
-.take-order-button {
+/* Стиль для изображения */
+.order-image {
     width: 100%;
+    max-width: 120px;
+    height: 120px;
+    object-fit: cover;
+    margin: 10px 0;
+    border-radius: 8px;
+}
+
+/* Кнопка для перехода на страницу жалоб для создателя */
+.complaints-button {
+    display: block;
     padding: 12px;
+    background-color: #f4f4f4;
+    color: #007aff;
+    text-align: center;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-top: 12px;
+    border: 1px solid #007aff;
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.complaints-button:hover {
     background-color: #007aff;
     color: white;
-    font-size: 15px;
+}
+
+/* Кнопка "Запросить выполнение" */
+.take-order-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #007aff;
+    color: white;
+    font-size: 16px;
     font-weight: 600;
     text-align: center;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background-color 0.3s ease;
+    margin-top: 12px;
 }
 
 .take-order-button:hover {
     background-color: #005ecb;
 }
 
-/* Сообщения */
-.error-message {
+/* Сообщения об ошибках и отсутствии заказов */
+.error-message, .no-orders {
     text-align: center;
+    font-size: 18px;
     color: #ff3b30;
-    font-size: 16px;
-    font-weight: 500;
-    margin-top: 15px;
+    font-weight: 600;
+    margin-top: 20px;
 }
 
-.no-orders {
-    text-align: center;
-    font-size: 16px;
-    color: #777;
-    margin-top: 15px;
-}
-/* Гарантируем перенос длинного текста */
-.order-card p {
-    word-wrap: break-word; /* Разрыв длинных слов */
-    overflow-wrap: break-word; /* Перенос слов */
-    white-space: normal; /* Разрешаем перенос строк */
-}
-
-/* Если текст слишком длинный, ограничиваем ширину */
-.order-description {
-    max-width: 100%; /* Запрещаем выход за границы */
-    word-break: break-word; /* Принудительный перенос длинных слов */
-}
-.order-image {
-    width: 100px; /* Размер превью - можно изменить */
-    height: 100px; /* Тоже размер превью */
-    object-fit: cover; /* Обрезаем изображение, если оно выходит за размеры */
-    margin: 10px;
-    border-radius: 8px; /* Если хочешь скруглить углы */
-}
-
-/* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ --- */
+/* Адаптация для мобильных устройств */
 @media (max-width: 480px) {
     .orders-container {
-        padding: calc(65px + env(safe-area-inset-top)) 10px calc(70px + env(safe-area-inset-bottom));
+        padding: calc(65px + env(safe-area-inset-top)) 12px calc(70px + env(safe-area-inset-bottom));
     }
 
     .orders-wrapper {
@@ -169,20 +124,53 @@
     }
 
     .order-card {
+        padding: 16px;
+    }
+
+    .order-card p {
+        font-size: 14px;
+    }
+
+    .take-order-button {
+        font-size: 14px;
         padding: 12px;
     }
 
-    .page-title {
-        font-size: 20px;
+    .complaints-button {
+        font-size: 14px;
+        padding: 10px;
     }
+}
 
-    .orders-wrapper .action-buttons {
-        flex-direction: column;
-        gap: 6px;
-    }
+/* Дополнительные улучшения */
+.order-card .order-left p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
 
-    .orders-wrapper .action-buttons button {
-        flex: none;
-        width: 100%;
-    }
+.order-card .order-left p strong {
+    font-size: 16px;
+    font-weight: 700;
+    color: #020000;
+}
+
+/* Заголовок заказа */
+.order-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.order-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.4;
+    text-align: left;
+}
+
+/* Отображение даты */
+.order-title strong {
+    color: #007aff;
 }

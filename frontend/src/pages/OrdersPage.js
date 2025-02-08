@@ -92,22 +92,30 @@ const OrdersPage = () => {
                             return (
                                 <li className="order-card" key={order.id}>
                                     <div className="order-content">
+                                        <div className="order-header">
+                                            <p className="order-title">
+                                                <strong>Заказ номер {order.id}</strong> от заказчика с
+                                                ID {order.creatorId}.
+                                                Создан {new Date(order.createdAt).toLocaleString()}
+                                            </p>
+                                        </div>
+
                                         <div className="order-left">
-                                            <p><strong>№ заказа:</strong> {order.id}</p>
                                             <p><strong>Тип заказа:</strong> {order.type}</p>
                                             <p><strong>Описание:</strong> {order.description}</p>
                                             <p><strong>Адрес:</strong> {order.address}</p>
                                             <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                             <p><strong>Имя создателя:</strong> {creator.username || "Неизвестно"}</p>
-                                            <p><strong>ID создателя:</strong> {order.creatorId}</p>
-                                            <p><strong>Дата создания:</strong> {order.createdAt}</p>
-                                            <p><strong>Рейтинг создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}</p>
+                                            <p><strong>Рейтинг
+                                                создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}
+                                            </p>
                                         </div>
 
                                         {Array.isArray(order.images) && order.images.length > 0 ? (
                                             order.images.map((image, index) => {
                                                 const imageUrl = `http://localhost:5000${image}`;
-                                                return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`} className="order-image" />;
+                                                return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`}
+                                                            className="order-image"/>;
                                             })
                                         ) : (
                                             <p>Изображений нет</p>
@@ -117,7 +125,7 @@ const OrdersPage = () => {
                                     {/* Кнопка для перехода на страницу жалоб для создателя */}
                                     {creator.username && (
                                         <Link to={`/complaints/${order.creatorId}`} className="complaints-button">
-                                            Жалобы на создателя: {creator.complaintsCount || 0}                                       </Link>
+                                        Жалобы на создателя: {creator.complaintsCount || 0}                                       </Link>
                                     )}
 
                                     {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (

@@ -180,9 +180,7 @@ const ActiveOrdersPage = () => {
                                         <button className="route-button">Маршрут</button>
 
                                         <div className="action-buttons">
-                                            <button className="call-button"
-                                                    onClick={() => window.open(`tel:${order.phone}`)}>Позвонить
-                                            </button>
+
                                             <button className="complain-button"
                                                     onClick={() => handleComplaint(order.id)}>
                                                 Пожаловаться
