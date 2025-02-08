@@ -103,7 +103,15 @@
         margin-top: 20px;
         margin-bottom: 10px;
     }
-
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+        padding-top: 80px;
+        padding-bottom: 90px;
+    }
     .title {
         font-size: 22px;
     }

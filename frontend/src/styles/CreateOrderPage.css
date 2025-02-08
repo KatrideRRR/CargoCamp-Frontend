@@ -1,20 +1,23 @@
-/* Отступ сверху для всего контейнера */
+.create-order-page {
+
+    /* Отступ сверху для всего контейнера */
 .container {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    margin: 2rem auto;
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     box-sizing: border-box; /* Для учета внутренних отступов */
+    margin-top: 70px;
+    margin-bottom: 50px;
 }
 
 /* Центровка формы */
 .form-container {
     width: 100%;
     max-width: 600px; /* Ограничиваем максимальную ширину формы */
-    padding: 2rem;
+    padding: 30px;
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -26,6 +29,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    flex-grow: 1; /* Это позволяет форме растягиваться, заполняя доступное пространство */
 }
 .image-preview {
     display: flex;
@@ -42,14 +46,30 @@
 }
 
 
-/* Мобильная версия: настройка отступов */
-@media (max-width: 768px) {
-    .container {
-        margin-top: 18rem;
-        padding-top: 3rem; /* Уменьшенный отступ от navbar */
-        margin-bottom: 18rem; /* Дополнительный отступ для bottommenu */
+    @media (max-width: 768px) {
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #f8f9fa;
+            padding-top: 100px; /* Учитывает высоту navbar */
+            padding-bottom: 120px; /* Учитывает высоту bottommenu + небольшой отступ */
+            box-sizing: border-box;
+            overflow: auto;
+        }
+
+        .form-container {
+            padding: 20px;
+            width: 100%;
+            margin-bottom: 30px;
+            margin-top: 50px;
+        }
+
+        body {
+            margin-bottom: 120px; /* Чтобы вся страница не заходила за bottommenu */
+        }
     }
-}
+
 
 /* Поля в строку */
 .input-row {
@@ -267,4 +287,4 @@ input[type="number"] {
     overflow: hidden;
     padding: 1rem;
     box-sizing: border-box;
-}
+}}
