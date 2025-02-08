@@ -73,36 +73,48 @@
 
 /* Индивидуальные стили кнопок */
 .orders-wrapper .call-button {
-    background-color: #005ecb;
+    background-color: #28a745;
 }
 
 .orders-wrapper .call-button:hover {
-    background-color: #004bb7;
+    background-color: #218838 ;
 }
 
 .orders-wrapper .message-button {
-    background-color: #0275d8;
+    background-color: #007bff ;
 }
 
 .orders-wrapper .message-button:hover {
-    background-color: #0256a3;
+    background-color: #0056b3 ;
 }
 
 .orders-wrapper .route-button {
-    background-color: #e0a800;
+    background-color: #e0a800 ;
     color: #222;
 }
 
 .orders-wrapper .route-button:hover {
-    background-color: #c79200;
+    background-color: #c67600 ;
+}
+.orders-wrapper .complain-button {
+    background-color: #dc3545 ;
+}
+.orders-wrapper .complain-button:hover {
+    background-color: #c82333 ;
 }
 
 .orders-wrapper .complete-button {
-    background-color: #c82333;
+    background-color: #6c757d  ;
 }
 
 .orders-wrapper .complete-button:hover {
-    background-color: #a71d2a;
+    background-color: #5a6268  ;
+}
+/* Заголовок заказа */
+.order-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 /* Кнопка "Взять в работу" */

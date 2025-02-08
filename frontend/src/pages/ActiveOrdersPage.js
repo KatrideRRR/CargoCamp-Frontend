@@ -160,12 +160,17 @@ const ActiveOrdersPage = () => {
 
                             return (
                                 <li key={order.id} className="order-card">
-                                    <p><strong>№ заказа:</strong> {order.id}</p>
+                                    <div className="order-header">
+                                        <p className="order-title">
+                                            <strong>Заказ номер {order.id}</strong> от заказчика с
+                                            ID {order.creatorId}.
+                                            Создан {new Date(order.createdAt).toLocaleString()}
+                                        </p>
+                                    </div>
                                     <p><strong>Тип:</strong> {order.type}</p>
                                     <p><strong>Описание:</strong> {order.description}</p>
                                     <p><strong>Адрес:</strong> {order.address}</p>
                                     <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                    <p><strong>ID создателя:</strong> {order.creatorId}</p>
                                     <p><strong>ID исполнителя:</strong> {order.executorId}</p>
                                     {order.photoUrl && (
                                         <img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа"
@@ -179,29 +184,27 @@ const ActiveOrdersPage = () => {
                                         </button>
                                         <button className="route-button">Маршрут</button>
 
-                                        <div className="action-buttons">
 
-                                            <button className="complain-button"
-                                                    onClick={() => handleComplaint(order.id)}>
-                                                Пожаловаться
-                                            </button>
+                                        <button className="complain-button"
+                                                onClick={() => handleComplaint(order.id)}>
+                                            Пожаловаться
+                                        </button>
 
-                                            {/* Модальное окно для жалобы */}
-                                            {showComplaintModal && selectedOrderId === order.id && (
-                                                <div className="modal">
-                                                    <h2>Напишите свою жалобу:</h2>
-                                                    <textarea
-                                                        value={complaintText}
-                                                        onChange={(e) => setComplaintText(e.target.value)}
-                                                        rows="5"
-                                                        placeholder="Введите текст жалобы"
-                                                    />
-                                                    <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
-                                                    <button onClick={() => setShowComplaintModal(false)}>Закрыть
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
+                                        {/* Модальное окно для жалобы */}
+                                        {showComplaintModal && selectedOrderId === order.id && (
+                                            <div className="modal">
+                                                <h2>Напишите свою жалобу:</h2>
+                                                <textarea
+                                                    value={complaintText}
+                                                    onChange={(e) => setComplaintText(e.target.value)}
+                                                    rows="5"
+                                                    placeholder="Введите текст жалобы"
+                                                />
+                                                <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
+                                                <button onClick={() => setShowComplaintModal(false)}>Закрыть
+                                                </button>
+                                            </div>
+                                        )}
                                         {isCompletedByUser ? (
                                             isWaitingForOther ? (
                                                 <>
