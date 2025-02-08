@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../utils/authContext";
 import axios from "axios";
@@ -10,6 +10,30 @@ const ProfilePage = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { logout, isAuthenticated } = useAuth();
+    const [selectedFiles, setSelectedFiles] = useState(null);
+
+    const handleFileChange = (event) => {
+        setSelectedFiles(event.target.files);
+    };
+
+    const handleUploadDocuments = async (files) => {
+        if (!files) return;
+        const token = localStorage.getItem('authToken');
+
+        const formData = new FormData();
+        for (let file of files) {
+            formData.append('documents', file);
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/upload-documents', {
+            method: 'POST',
+            body: formData,
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await response.json();
+        alert(data.message);
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -56,10 +80,6 @@ const ProfilePage = () => {
         navigate('/login');
     };
 
-    const handleUploadDocuments = () => {
-        navigate('/upload-documents');
-    };
-
     const handleMyComplaints = () => {
         if (profile) {
             navigate(`/complaints/${profile.id}`);
@@ -70,6 +90,7 @@ const ProfilePage = () => {
             navigate(`/orders-history/${profile.id}`);
         }
     };
+
     // Функция рендера звездочек
     const renderStars = (rating) => {
         const maxStars = 5;
@@ -77,7 +98,6 @@ const ProfilePage = () => {
         const emptyStar = '☆';
         return fullStar.repeat(Math.round(rating)) + emptyStar.repeat(maxStars - Math.round(rating));
     };
-
 
     if (loading) {
         return <div className="loading-container">Загрузка данных профиля...</div>;
@@ -93,8 +113,6 @@ const ProfilePage = () => {
 
     return (
         <div className="container">
-
-
             <div className="profile-container">
                 {profile ? (
                     <>
@@ -117,12 +135,25 @@ const ProfilePage = () => {
                                 {profile.verified ? 'Пройдена' : 'Не пройдена'}
                             </p>
                             {!profile.verified && (
-                                <button
-                                    onClick={handleUploadDocuments}
-                                    className="upload-button"
-                                >
-                                    Загрузить документы
-                                </button>
+                                <div>
+                                    <button
+                                        onClick={() => {
+                                            const input = document.createElement('input');
+                                            input.type = 'file';
+                                            input.multiple = true;
+
+                                            input.onchange = async (e) => {
+                                                const files = e.target.files;
+                                                await handleUploadDocuments(files);
+                                            };
+
+                                            input.click(); // Открыть диалог выбора файлов
+                                        }}
+                                        className="upload-button" // Здесь добавлен класс
+                                    >
+                                        Выбрать файлы и загрузить
+                                    </button>
+                                </div>
                             )}
                         </div>
 
@@ -134,7 +165,6 @@ const ProfilePage = () => {
                         <button onClick={handleOrderHistory} className="history-button">
                             История заказов
                         </button>
-
 
                         <button onClick={handleLogout} className="logout-button">
                             Выйти
