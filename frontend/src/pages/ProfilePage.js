@@ -150,7 +150,6 @@ const ProfilePage = () => {
                                             input.click(); // Открыть диалог выбора файлов
                                         }}
                                         className="upload-button" // Здесь добавлен класс
-
                                     >
                                         Выбрать файлы и загрузить
                                     </button>
