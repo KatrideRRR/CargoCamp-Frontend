@@ -10,6 +10,31 @@ const ProfilePage = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { logout, isAuthenticated } = useAuth();
+    const [selectedFiles, setSelectedFiles] = useState(null);
+
+    const handleFileChange = (event) => {
+        setSelectedFiles(event.target.files);
+    };
+
+    const handleUploadDocuments = async () => {
+        if (!selectedFiles) return;
+        const token = localStorage.getItem('authToken');
+
+        const formData = new FormData();
+        for (let file of selectedFiles) {
+            formData.append('documents', file);
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/upload-documents', {
+            method: 'POST',
+            body: formData,
+            headers: { Authorization: `Bearer ${token}` },
+
+            });
+
+        const data = await response.json();
+        alert(data.message);
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -56,9 +81,7 @@ const ProfilePage = () => {
         navigate('/login');
     };
 
-    const handleUploadDocuments = () => {
-        navigate('/upload-documents');
-    };
+
 
     const handleMyComplaints = () => {
         if (profile) {
@@ -117,18 +140,18 @@ const ProfilePage = () => {
                                 {profile.verified ? 'Пройдена' : 'Не пройдена'}
                             </p>
                             {!profile.verified && (
-                                <button
-                                    onClick={handleUploadDocuments}
-                                    className="upload-button"
-                                >
-                                    Загрузить документы
-                                </button>
+
+                                <div>
+                                    <h2>Загрузка документов</h2>
+                                    <input type="file" multiple onChange={handleFileChange}/>
+                                    <button onClick={handleUploadDocuments}>Загрузить</button>
+                                </div>
                             )}
                         </div>
 
                         {/* Кнопка "Мои жалобы" */}
                         <button onClick={handleMyComplaints} className="complaints-button">
-                            Мои жалобы
+                        Мои жалобы
                         </button>
                         {/* Кнопка "История заказов" */}
                         <button onClick={handleOrderHistory} className="history-button">
