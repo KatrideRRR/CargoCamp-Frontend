@@ -47,6 +47,12 @@ module.exports = (sequelize) => {
                 type: DataTypes.JSON,
                 defaultValue: [],
             },
+            documentPhotos: {
+                type: DataTypes.JSON, // Массив изображений
+                allowNull: true,
+                defaultValue: []
+            },
+
         },
         {
             sequelize,

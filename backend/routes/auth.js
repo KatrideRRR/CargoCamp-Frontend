@@ -4,6 +4,60 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../models'); // Убедитесь, что путь к модели корректен
 const authenticateToken = require('../middlewares/authenticateToken'); // Middleware для проверки токена
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+
+// Настройка хранения файлов (загружаем в папку uploads/)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/upload-document');
+    },
+    filename: (req, file, cb) => {
+        const userId = req.user.id; // Получаем ID пользователя из токена или сессии
+        const ext = path.extname(file.originalname); // Получаем расширение файла (например, .jpg)
+
+        // Имя файла будет таким: id_пользователя_номер_изображения.расширение
+        // Для этого нужно будет сначала получить количество загруженных файлов для пользователя
+        User.findByPk(userId)
+            .then(user => {
+                const imageCount = user.documentPhotos ? user.documentPhotos.length : 0;
+                const newFileName = `${userId}_${imageCount + 1}${ext}`; // Формируем новое имя
+                cb(null, newFileName); // Отправляем новое имя файла
+            })
+            .catch(error => {
+                cb(error);
+            });
+    }
+});
+
+const upload = multer({ storage });
+
+// Маршрут для загрузки изображения
+router.post('/upload-documents',authenticateToken, upload.array('documents', 5), async (req, res) => {
+    try {
+        const userId = req.user.id; // Получаем ID пользователя из токена или сессии
+
+        const fileNames = req.files.map(file => file.filename); // Получаем имена загруженных файлов
+
+        // Обновляем пользователя с новыми файлами
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // Добавляем новые изображения в массив
+        const updatedPhotos = user.documentPhotos ? [...user.documentPhotos, ...fileNames] : fileNames;
+
+        user.documentPhotos = updatedPhotos; // Обновляем поле с изображениями
+        await user.save(); // Сохраняем изменения в базе данных
+
+        res.status(200).json({ message: 'Документы загружены успешно', files: updatedPhotos });
+    } catch (error) {
+        console.error('Ошибка при загрузке документов:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
 
 // Регистрация пользователя
 router.post('/register', async (req, res) => {
