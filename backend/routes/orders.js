@@ -7,6 +7,30 @@ const multer = require('multer');
 const { Op } = require('sequelize');
 const path = require('path');
 const { Sequelize } = require('sequelize');  // Импортируем Sequelize
+const moment = require('moment'); // Для работы с датами
+
+// Устанавливаем интервал для проверки заказов (например, каждое утро в 6:00)
+setInterval(async () => {
+    try {
+        // Получаем все заказы, которые не были взяты в работу и созданы более 24 часов назад
+        const ordersToDelete = await Order.findAll({
+            where: {
+                status: 'pending',
+                createdAt: {
+                    [Sequelize.Op.lt]: moment().subtract(24, 'hours').toDate(), // Заказы старше 24 часов
+                },
+            },
+        });
+
+        // Удаляем все такие заказы
+        for (const order of ordersToDelete) {
+            await order.destroy();
+            console.log(`Заказ ${order.id} удален автоматически.`);
+        }
+    } catch (error) {
+        console.error("Ошибка при удалении старых заказов:", error);
+    }
+}, 60 * 60 * 1000); // Проверка раз в час (можно настроить под свои нужды)
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -68,19 +92,37 @@ module.exports = (io) => {
         }
     });
 
-    // Get all orders
+    // Получить все заказы
     router.get('/all', async (req, res) => {
-    try {
-        const orders = await Order.findAll({
-            attributes: ['id','createdAt', 'address', 'description', 'workTime','images' ,'proposedSum','creatorId' ,'coordinates', 'type', 'executorId', 'status'],
-            where: { status: 'pending' },
-        });
-        res.json(orders);
-    } catch (error) {
-        console.error('Ошибка при получении заказов:', error);
-        res.status(500).json({ message: 'Ошибка сервера' });
-    }
-});
+        try {
+            // Удаляем старые заказы, не взятые в работу (старше 24 часов)
+            const ordersToDelete = await Order.findAll({
+                where: {
+                    status: 'pending',
+                    createdAt: {
+                        [Sequelize.Op.lt]: moment().subtract(24, 'hours').toDate(), // Заказы старше 24 часов
+                    },
+                },
+            });
+
+            // Удаляем старые заказы
+            for (const order of ordersToDelete) {
+                await order.destroy();
+                console.log(`Заказ ${order.id} удален автоматически.`);
+            }
+
+            // Получаем все оставшиеся заказы с статусом "pending"
+            const orders = await Order.findAll({
+                attributes: ['id', 'createdAt', 'address', 'description', 'workTime', 'images', 'proposedSum', 'creatorId', 'coordinates', 'type', 'executorId', 'status'],
+                where: { status: 'pending' },
+            });
+
+            res.json(orders);
+        } catch (error) {
+            console.error('Ошибка при получении заказов:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    });
 
     // Get active orders
     router.get('/active-orders', authenticateToken, async (req, res) => {
@@ -379,9 +421,6 @@ module.exports = (io) => {
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     });
-
-
-
 
     return router;
 };

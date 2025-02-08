@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/authContext';
 import { useUser } from '../utils/userContext';
-
+import '../styles/LoginPage.css';  // Подключаем CSS файл
 
 const LoginPage = () => {
     const [phone, setPhone] = useState('');
@@ -12,7 +12,6 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const { setCurrentUser } = useUser(); // Извлечение setCurrentUser из контекста
-
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -29,42 +28,41 @@ const LoginPage = () => {
         }
     };
 
-
     return (
-        <div style={styles.container}>
-            <div style={styles.formContainer}>
-                <h1 style={styles.title}>Войти в аккаунт</h1>
-                {error && <p style={styles.error}>{error}</p>}
-                <form onSubmit={handleLogin} style={styles.form}>
-                    <div style={styles.inputGroup}>
-                        <label htmlFor="phone" style={styles.label}>Телефон:</label>
+        <div className="container">
+            <div className="formContainer">
+                <h1 className="title">Войти в аккаунт</h1>
+                {error && <p className="error">{error}</p>}
+                <form onSubmit={handleLogin} className="form">
+                    <div className="inputGroup">
+                        <label htmlFor="phone" className="label">Телефон:</label>
                         <input
                             id="phone"
                             type="phone"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             required
-                            style={styles.input}
+                            className="input"
                         />
                     </div>
-                    <div style={styles.inputGroup}>
-                        <label htmlFor="password" style={styles.label}>Пароль:</label>
+                    <div className="inputGroup">
+                        <label htmlFor="password" className="label">Пароль:</label>
                         <input
                             id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            style={styles.input}
+                            className="input"
                         />
                     </div>
-                    <button type="submit" style={styles.button}>Войти</button>
+                    <button type="submit" className="button">Войти</button>
                 </form>
-                <p style={styles.registerText}>
+                <p className="registerText">
                     Нет аккаунта?{' '}
                     <span
                         onClick={() => navigate('/register')}
-                        style={styles.registerLink}
+                        className="registerLink"
                     >
                         Зарегистрироваться
                     </span>
@@ -72,76 +70,6 @@ const LoginPage = () => {
             </div>
         </div>
     );
-};
-
-const styles = {
-    container: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        backgroundColor: '#f2f2f2',
-    },
-    formContainer: {
-        backgroundColor: '#fff',
-        padding: '30px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        maxWidth: '400px',
-        textAlign: 'center',
-    },
-    title: {
-        fontSize: '24px',
-        marginBottom: '20px',
-        color: '#333',
-    },
-    error: {
-        color: 'red',
-        marginBottom: '15px',
-        fontSize: '14px',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px',
-    },
-    inputGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-    },
-    label: {
-        fontSize: '14px',
-        marginBottom: '5px',
-        color: '#555',
-    },
-    input: {
-        width: '100%',
-        padding: '10px',
-        fontSize: '16px',
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-    },
-    button: {
-        padding: '10px 20px',
-        fontSize: '16px',
-        color: '#fff',
-        backgroundColor: '#007aff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-    },
-    registerText: {
-        marginTop: '15px',
-        fontSize: '14px',
-        color: '#555',
-    },
-    registerLink: {
-        color: '#007aff',
-        cursor: 'pointer',
-        textDecoration: 'underline',
-    },
 };
 
 export default LoginPage;
