@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axiosInstance from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom'; // Используем useNavigate
+import '../styles/modalContext.css'
 
 export const ModalContext = createContext();
 
@@ -135,38 +136,50 @@ export const ModalProvider = ({ children }) => {
 
             {/* Основное модальное окно */}
             {modalData && (
-                <div className="modal">
-                    <h2>{modalData.title}</h2>
-                    <p>{modalData.description}</p>
-                    <button onClick={modalData.onConfirm}>Одобрить</button>
-                    <button onClick={modalData.onCancel}>Отклонить</button>
+                <div className="modal-overlay">
 
-                    {/* Кнопка для перехода к жалобам на исполнителя */}
-                    {modalData.executorId && (
-                        <button onClick={() => handleGoToComplaints(modalData.executorId, modalData.orderId)}>
-                            Перейти к жалобам на исполнителя
-                        </button>
+                    <div className="modal">
+                        <h2>{modalData.title}</h2>
+                        <p>{modalData.description}</p>
+                        <button onClick={modalData.onConfirm}>Одобрить</button>
+                        <button onClick={modalData.onCancel}>Отклонить</button>
+
+                        {/* Кнопка для перехода к жалобам на исполнителя */}
+                        {modalData.executorId && (
+                            <button onClick={() => handleGoToComplaints(modalData.executorId, modalData.orderId)}>
+                                Перейти к жалобам на исполнителя
+                            </button>
+                        )}
+                    </div>
+
+                </div>
                     )}
-                </div>
-            )}
 
-            {/* Уведомление для исполнителя в виде модала */}
-            {notificationData && (
-                <div className="modal">
-                    <h2>{notificationData.title}</h2>
-                    <p>{notificationData.description}</p>
-                    <button onClick={notificationData.onClose}>Закрыть</button>
-                </div>
-            )}
+                    {/* Уведомление для исполнителя в виде модала */}
+                    {notificationData && (
+                        <div className="modal-overlay">
 
-            {/* Уведомление о завершении заказа */}
-            {completionNotificationData && (
-                <div className="modal">
-                    <h2>{completionNotificationData.title}</h2>
-                    <p>{completionNotificationData.description}</p>
-                    <button onClick={completionNotificationData.onClose}>Закрыть</button>
-                </div>
-            )}
+                            <div className="modal">
+                                <h2>{notificationData.title}</h2>
+                                <p>{notificationData.description}</p>
+                                <button onClick={notificationData.onClose}>Закрыть</button>
+                            </div>
+                        </div>
+
+                    )}
+
+                            {/* Уведомление о завершении заказа */}
+                            {completionNotificationData && (
+                                <div className="modal-overlay">
+
+                                    <div className="modal">
+                                        <h2>{completionNotificationData.title}</h2>
+                                        <p>{completionNotificationData.description}</p>
+                                        <button onClick={completionNotificationData.onClose}>Закрыть</button>
+                                    </div>
+                                </div>
+
+                            )}
         </ModalContext.Provider>
-    );
-};
+                    );
+                    };
