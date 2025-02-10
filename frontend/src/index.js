@@ -17,6 +17,8 @@ import { UserProvider } from './utils/userContext';
 import { ModalProvider } from './components/modalContext';
 import UserComplaintsPage from './pages/UserComplaintsPage';
 import OrderHistoryPage from "./pages/OrderHistoryPage";
+import OrderPage from './pages/OrderPage';
+import UserOrdersPage from './pages/UserOrdersPage';
 
 const App = () => {
     return (
@@ -36,6 +38,8 @@ const App = () => {
                             <Route path="/orders-history/:userId" element={<OrderHistoryPage />} />
                             <Route path="/create-order" element={<CreateOrderPage />} />
                             <Route path="/messages/:orderId" element={<ChatPage/>} />
+                            <Route path="/order/:id" element={<OrderPage />} />
+                            <Route path="/user-orders/:userId" element={<UserOrdersPage />} />
                         </Routes>
                         <BottomMenu />
             </UserProvider>

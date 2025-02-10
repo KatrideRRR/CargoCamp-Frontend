@@ -48,3 +48,32 @@
         width: 95%;
     }
 }
+
+.view-orders-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 20px;
+    background-color: #4CAF50; /* Зеленый фон */
+    color: white; /* Белый текст */
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px; /* Слегка закругленные углы */
+    text-decoration: none; /* Убирает подчеркивание */
+    transition: background-color 0.3s, transform 0.2s; /* Плавное изменение цвета фона и эффекта нажатия */
+}
+
+.view-orders-button:hover {
+    background-color: #45a049; /* Темнее при наведении */
+    transform: scale(1.05); /* Легкое увеличение кнопки при наведении */
+}
+
+.view-orders-button:active {
+    transform: scale(1); /* Восстановление нормального размера при клике */
+    background-color: #388e3c; /* Еще темнее при клике */
+}
+
+.view-orders-button:focus {
+    outline: none; /* Убираем обводку фокуса */
+}
+

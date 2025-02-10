@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import '../styles/UserComplaintsPage.css';
 
@@ -45,6 +45,11 @@ const UserComplaintsPage = () => {
             ) : (
                 <p>Жалоб пока нет.</p>
             )}
+            {/* Кнопка для перехода на страницу заказов */}
+            <Link to={`/user-orders/${user.id}`} className="view-orders-button">
+                Посмотреть заказы этого пользователя
+            </Link>
+
 
         </div>
     );

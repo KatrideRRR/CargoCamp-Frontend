@@ -142,33 +142,31 @@ module.exports = (io) => {
 });
 
     // Get order by ID
-    router.get('/:id', authenticateToken, async (req, res) => {
-    const { id } = req.params;
-    const currentUserId = req.user.id;
+    router.get('/:id', async (req, res) => {
+        const { id } = req.params;
 
-    try {
-        const order = await Order.findByPk(id, {
-            include: { model: User, as: 'user', attributes: ['id', 'username', 'phone'] },
-        });
+        try {
+            // Ищем заказ по ID, включая данные о пользователе
+            const order = await Order.findByPk(id, {
+                include: { model: User, as: 'user', attributes: ['id', 'username', 'phone'] },
+            });
 
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            // Если заказ не найден
+            if (!order) {
+                return res.status(404).json({ message: 'Order not found' });
+            }
+
+            // Убираем проверку на авторизацию, чтобы любой пользователь мог получить доступ
+            // Проверка на доступность для создателя и исполнителя исключена
+
+            // Если текущий пользователь - исполнитель, добавляем информацию о телефоне
+
+            res.json(order);
+        } catch (error) {
+            console.error('Error fetching order:', error);
+            res.status(500).json({ message: 'Server error' });
         }
-
-        if (order.creatorId !== currentUserId && order.executorId !== currentUserId) {
-            return res.status(403).json({ message: 'Нет доступа к заказу' });
-        }
-
-        const orderData = order.executorId === currentUserId
-            ? { ...order.toJSON(), phone: order.user.phone }
-            : order;
-
-        res.json(orderData);
-    } catch (error) {
-        console.error('Error fetching order:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+    });
 
     // Get request for order
     router.post('/:id/request', authenticateToken, async (req, res) => {
@@ -393,6 +391,7 @@ module.exports = (io) => {
         }
     });
 
+    // Завершенные заказы пользователя
     router.get('/completed/:userId', async (req, res) => {
         const { userId } = req.params;
 
@@ -418,6 +417,30 @@ module.exports = (io) => {
             res.json(completedOrders);
         } catch (error) {
             console.error('Ошибка при получении завершенных заказов:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    });
+
+    // Созданные пользователем заказы
+    router.get('/creator/:userId', async (req, res) => {
+        const { userId } = req.params;
+
+        try {
+            const orders = await Order.findAll({
+                where: {
+                    creatorId: userId,
+                    status: 'pending',
+                },  // Фильтруем заказы по ID создателя
+                include: { model: User, as: 'user', attributes: ['id', 'username'] },
+            });
+
+            if (!orders.length) {
+                return res.status(404).json({ message: 'Заказы не найдены' });
+            }
+
+            res.json(orders);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     });

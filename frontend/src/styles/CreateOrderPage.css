@@ -52,7 +52,7 @@
             justify-content: center;
             align-items: flex-start;
             background-color: #f8f9fa;
-            padding-top: 100px; /* Учитывает высоту navbar */
+            padding-top: 1px; /* Учитывает высоту navbar */
             padding-bottom: 120px; /* Учитывает высоту bottommenu + небольшой отступ */
             box-sizing: border-box;
             overflow: auto;
@@ -62,7 +62,7 @@
             padding: 20px;
             width: 100%;
             margin-bottom: 30px;
-            margin-top: 50px;
+            margin-top: 10px;
         }
 
         body {
