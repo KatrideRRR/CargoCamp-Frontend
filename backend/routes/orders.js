@@ -317,6 +317,8 @@ module.exports = (io) => {
                 io.to(`user_${order.creatorId}`).emit('orderCompleted', {
                     orderId: order.id,
                     message: 'Исполнитель предложил завершить заказ',
+                    creatorId: order.creatorId,   // ✅ Добавлено
+                    executorId: order.executorId  // ✅ Добавлено
                 });
             }
 

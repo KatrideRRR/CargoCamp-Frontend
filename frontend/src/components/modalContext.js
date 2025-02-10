@@ -13,7 +13,10 @@ export const ModalProvider = ({ children }) => {
     const [userId, setUserId] = useState(null);
     const [notificationData, setNotificationData] = useState(null); // Для уведомлений исполнителю
     const [completionNotificationData, setCompletionNotificationData] = useState(null); // Уведомление по завершению заказа
-    const navigate = useNavigate(); // Используем navigate для переходов
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [rating, setRating] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -84,10 +87,13 @@ export const ModalProvider = ({ children }) => {
                     setCompletionNotificationData({
                         title: "Ожидание завершения заказа",
                         description: `Заказ номер ${data.orderId}: ${data.message}`,
-                        onClose: () => setCompletionNotificationData(null),
+                        orderId: data.orderId,
+                        creatorId: data.creatorId,  // ✅ Добавили
+                        executorId: data.executorId // ✅ Добавили
                     });
                 }
             });
+
 
             return () => {
                 socket.off('orderRequested');
@@ -130,8 +136,69 @@ export const ModalProvider = ({ children }) => {
         navigate(`/complaints/${executorId}?orderId=${orderId}`);
     };
 
+    const handleCompleteOrder = async (orderId, creatorId, executorId) => {
+        console.log("▶ Начало завершения заказа", { orderId, creatorId, executorId });
+
+        setSelectedOrder({
+            id: orderId,
+            creatorId,
+            executorId
+        });
+
+        setShowRatingModal(true);
+
+    };
+
+
+    const submitRating = async () => {
+        if (!selectedOrder || rating === 0) {
+            console.error("⛔ Ошибка: заказ не выбран или рейтинг не установлен");
+            return;
+        }
+
+        try {
+            console.log(`📤 Отправка рейтинга: ${rating} для заказа ${selectedOrder.id}`);
+
+            const token = localStorage.getItem('authToken');
+            console.log("🎯 Данные о заказе перед отправкой рейтинга:", selectedOrder);
+            console.log("👤 Текущий пользователь (ставит оценку):", userId);
+            // Определяем, кого оценивает пользователь
+            const ratedUserId = selectedOrder.executorId === userId
+                ? selectedOrder.creatorId
+                : selectedOrder.executorId;
+
+            console.log("🎯 Оценка пользователя:", ratedUserId);
+
+            // Отправляем рейтинг
+            await axiosInstance.post("/auth/rate", {
+                userId: ratedUserId,
+                rating,
+
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            // Завершаем заказ
+            await axiosInstance.post(`/orders/complete/${selectedOrder.id}`, {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("✅ Заказ успешно завершен");
+            setCompletionNotificationData(null);
+
+            // Закрываем модал и сбрасываем состояния
+            setShowRatingModal(false);
+            setSelectedOrder(null);
+            setRating(0);
+
+        } catch (error) {
+            console.error("❌ Ошибка при завершении заказа или отправке рейтинга", error);
+        }
+    };
+
+
     return (
-        <ModalContext.Provider value={{ openModal, closeModal }}>
+        <ModalContext.Provider value={{ openModal: setModalData, closeModal: () => setModalData(null) }}>
             {children}
 
             {/* Основное модальное окно */}
@@ -175,11 +242,53 @@ export const ModalProvider = ({ children }) => {
                                     <div className="modal">
                                         <h2>{completionNotificationData.title}</h2>
                                         <p>{completionNotificationData.description}</p>
-                                        <button onClick={completionNotificationData.onClose}>Закрыть</button>
+                                        <button onClick={completionNotificationData.onClose}>Завершить</button>
                                     </div>
                                 </div>
 
                             )}
+
+            {/* Окно завершения заказа */}
+            {completionNotificationData && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h2>{completionNotificationData.title}</h2>
+                        <p>{completionNotificationData.description}</p>
+                        <button onClick={() => handleCompleteOrder(
+                            completionNotificationData.orderId,
+                            completionNotificationData.creatorId,
+                            completionNotificationData.executorId
+                        )}>
+                            Завершить
+                        </button>
+
+                    </div>
+                </div>
+            )}
+
+            {/* Модальное окно для оценки */}
+            {showRatingModal && selectedOrder && (
+                <div className="modal-overlay">
+                <div className="modal">
+                        <h2>Оцените участника</h2>
+                        <div className="stars">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                    key={star}
+                                    className={star <= rating ? "star selected" : "star"}
+                                    onClick={() => setRating(star)}
+                                >
+                                    ★
+                                </span>
+                            ))}
+                        </div>
+                        <button onClick={submitRating} disabled={rating === 0}>
+                            Завершить заказ
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </ModalContext.Provider>
                     );
                     };
