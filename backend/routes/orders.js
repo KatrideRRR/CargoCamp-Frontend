@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const NodeGeocoder = require('node-geocoder');
-const { Order, User } = require('../models');
+const db = require('../models');
 const authenticateToken = require('../middlewares/authenticateToken');
 const multer = require('multer');
 const { Op } = require('sequelize');
 const path = require('path');
 const { Sequelize } = require('sequelize');  // Импортируем Sequelize
 const moment = require('moment'); // Для работы с датами
+const { Order } = require('../models'); // Импорт модели Order
+
 
 // Устанавливаем интервал для проверки заказов (например, каждое утро в 6:00)
 setInterval(async () => {
@@ -49,7 +51,7 @@ module.exports = (io) => {
 
     // Add a new order
     router.post('/', authenticateToken, upload.array('images', 5), async (req, res) => {  // 'images' — это поле для загрузки
-        const { address, description, workTime, proposedSum, type } = req.body;
+        const { address, description, workTime, proposedSum, type, categoryId, subcategoryId} = req.body;
         const userId = req.user.id;
 
         try {
@@ -81,6 +83,8 @@ module.exports = (io) => {
                 images: photoUrls,  // Сохраняем массив ссылок на фото
                 creatorId: userId,
                 status: 'pending',
+                categoryId,
+                subcategoryId,
             });
 
             io.emit('orderUpdated'); // Отправляем событие обновления заказов
@@ -112,10 +116,15 @@ module.exports = (io) => {
             }
 
             // Получаем все оставшиеся заказы с статусом "pending"
-            const orders = await Order.findAll({
+            const orders = await db.Order.findAll({
                 attributes: ['id', 'createdAt', 'address', 'description', 'workTime', 'images', 'proposedSum', 'creatorId', 'coordinates', 'type', 'executorId', 'status'],
                 where: { status: 'pending' },
+                include: [
+                    { model: db.Category, as: 'category', attributes: ['id', 'name'] },
+                    { model: db.Subcategory, as: 'subcategory', attributes: ['id', 'name'] },
+                ],
             });
+
 
             res.json(orders);
         } catch (error) {

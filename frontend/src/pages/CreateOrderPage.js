@@ -30,13 +30,42 @@ function CreateOrderPage({ currentUserId }) {
     const [suggestions, setSuggestions] = useState([]);
     const currentDate = new Date(); // Текущая дата и время
     const [images, setImages] = useState([]); // Состояние для хранения выбранных изображений
+    const [category, setCategory] = useState([]);
+    const [subcategory, setSubcategory] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSubcategory, setSelectedSubcategory] = useState('');
+
 
     const handleImageChange = (event) => {
         const files = event.target.files;
         setImages(Array.from(files)); // Преобразуем FileList в массив
     };
-    ;
 
+
+    useEffect(() => {
+        // Получение списка категорий при загрузке компонента
+        axios.get('http://localhost:5000/api/category')
+            .then(response => {
+                setCategory(response.data);
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке категорий', error);
+            });
+    }, []);
+
+    const handleCategoryChange = (event) => {
+        const categoryId = event.target.value;
+        setSelectedCategory(categoryId);
+
+        // Получение подкатегорий для выбранной категории
+        axios.get(`http://localhost:5000/api/category/subcategory/${categoryId}`)
+            .then(response => {
+                setSubcategory(response.data);
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке подкатегорий', error);
+            });
+    };
 
 
 
@@ -106,6 +135,14 @@ function CreateOrderPage({ currentUserId }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+
+        const orderData = {
+            categoryId: selectedCategory,
+            subcategoryId: selectedSubcategory,
+        };
+        // Отправить данные на сервер
+        console.log('Создание заказа:', orderData);
+
         // Создаем FormData
         const data = new FormData();
 
@@ -115,6 +152,8 @@ function CreateOrderPage({ currentUserId }) {
                 data.append(key, formData[key]);
             }
         });
+        data.append("categoryId", Number(selectedCategory));
+        data.append("subcategoryId", Number(selectedSubcategory));
 
         // Добавляем изображения, если они есть
         images.forEach((image) => {
@@ -163,6 +202,33 @@ function CreateOrderPage({ currentUserId }) {
                         {error && <p className="error-text">{error}</p>}
                         <form onSubmit={handleSubmit} className="form">
                             <div className="input-group">
+                                <div>
+                                    <label>Выберите категорию:</label>
+                                    <select value={selectedCategory} onChange={handleCategoryChange}>
+                                        <option value="">Выберите категорию</option>
+                                        {category.map(category => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label>Выберите подкатегорию:</label>
+                                    <select
+                                        value={selectedSubcategory}
+                                        onChange={e => setSelectedSubcategory(e.target.value)}
+                                        disabled={!selectedCategory}
+                                    >
+                                        <option value="">Выберите подкатегорию</option>
+                                        {subcategory.map(subcategory => (
+                                            <option key={subcategory.id} value={subcategory.id}>
+                                                {subcategory.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <label className="label">Тип заказа</label>
                                 <input
                                     className="input"

@@ -102,6 +102,8 @@ const OrdersPage = () => {
 
                                         <div className="order-left">
                                             <p><strong>Тип заказа:</strong> {order.type}</p>
+                                            <p><strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}</p>
+                                            <p><strong>Подкатегория:</strong> {order.subcategory ? order.subcategory.name : 'Не указано'}</p>
                                             <p><strong>Описание:</strong> {order.description}</p>
                                             <p><strong>Адрес:</strong> {order.address}</p>
                                             <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
@@ -109,6 +111,8 @@ const OrdersPage = () => {
                                             <p><strong>Рейтинг
                                                 создателя:</strong> {creator.rating ? creator.rating.toFixed(1) : "Нет данных"}
                                             </p>
+
+
                                         </div>
 
                                         {Array.isArray(order.images) && order.images.length > 0 ? (

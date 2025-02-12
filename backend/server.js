@@ -9,19 +9,23 @@ const { initializeSocket } = require('./socket'); // Импортируем ин
 const orderRoutes = require('./routes/orders');
 const authRoutes = require('./routes/auth');
 const messagesRoutes = require('./routes/messages');
+const categoryRouter = require('./routes/category');
 
 const app = express();
 const server = http.createServer(app);
 
 // Инициализация WebSocket
 const io = initializeSocket(server);
+const db = require('./models');
+db.sequelize.sync();
 
 app.use(cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(bodyParser.json());
-app.use('/api/orders', orderRoutes(io)); // Передаём io в маршруты
+app.use('/api/orders', orderRoutes(io));
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use('/api/category', categoryRouter);
 
 // Database connection
 const Sequelize = require('sequelize');
@@ -54,19 +58,6 @@ sequelize.authenticate()
 sequelize.sync()
     .then(() => console.log('Database synchronized.'))
     .catch(err => console.error('Error synchronizing database:', err));
-
-// Models
-const initUser = require('./models/User');
-const initOrder = require('./models/Order');
-const initMessage = require('./models/Message');
-
-const User = initUser(sequelize, Sequelize.DataTypes);
-const Order = initOrder(sequelize, Sequelize.DataTypes);
-const Message = initMessage(sequelize, Sequelize.DataTypes);
-
-User.associate({ Order, Message });
-Order.associate({ User });
-Message.associate({ User });
 
 const PORT = process.env.PORT || 5000;
 
