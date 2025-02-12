@@ -3,6 +3,7 @@ import axiosInstance from '../utils/axiosInstance';
 import { Link } from 'react-router-dom'; // Импортируем Link для навигации
 import '../styles/OrdersPage.css';
 import io from 'socket.io-client';
+import axios from "axios";
 
 const socket = io('http://localhost:5000');
 
@@ -11,6 +12,14 @@ const OrdersPage = () => {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [creatorsInfo, setCreatorsInfo] = useState({}); // Данные о создателях заказов
+    const [categories, setCategories] = useState([]);
+    const [subcategories, setSubcategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSubcategory, setSelectedSubcategory] = useState('');
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -67,6 +76,87 @@ const OrdersPage = () => {
         }
     }, [userId]);
 
+    const fetchCategories = async () => {
+        try {
+            const response = await axiosInstance.get('/category');
+            setCategories(response.data);
+        } catch (error) {
+            console.error('Ошибка загрузки категорий:', error);
+        }
+    };
+
+    const fetchSubcategories = async (categoryId) => {
+        if (!categoryId) {
+            setSubcategories([]);
+            return;
+        }
+        try {
+            const response = await axiosInstance.get(`/category/subcategory/${categoryId}`);
+            setSubcategories(response.data);
+        } catch (error) {
+            console.error('Ошибка загрузки подкатегорий:', error);
+        }
+    };
+
+
+    const handleCategoryChange = async (event) => {
+        const categoryId = event.target.value;
+        setSelectedCategory(categoryId);
+        setSelectedSubcategory('');
+        fetchSubcategories(categoryId);
+        applyFilters(categoryId, '');
+    };
+
+    const handleSubcategoryChange = async (event) => {
+        const subcategoryId = event.target.value;
+        setSelectedSubcategory(subcategoryId);
+        applyFilters(selectedCategory, subcategoryId);
+    };
+
+
+
+    const applyFilters = async (categoryId, subcategoryId) => {
+        console.log("🔍 Фильтрация: категория =", categoryId, "подкатегория =", subcategoryId);
+
+        try {
+            const response = await axiosInstance.get('/orders/all', {
+                params: {
+                    categoryId: categoryId || undefined,
+                    subcategoryId: subcategoryId || undefined
+                }
+            });
+
+            console.log("📦 Отфильтрованные заказы после фильтрации:", response.data);
+            setOrders(response.data);
+        } catch (error) {
+            console.error("❌ Ошибка фильтрации заказов:", error);
+        }
+    };
+
+
+    const handleCategorySearch = async () => {
+        console.log("🔍 Поиск в категории:", selectedCategory);
+        if (!selectedCategory) {
+            console.warn("⚠ Нет выбранной категории, фильтрация не выполняется");
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.get('/orders/all', {
+                params: { categoryId: selectedCategory }
+            });
+
+            console.log("📦 Отфильтрованные заказы:", response.data);
+            setOrders(response.data);
+        } catch (error) {
+            console.error("❌ Ошибка при поиске в категории:", error);
+        }
+    };
+
+
+
+
+
     const handleRequestOrder = async (orderId) => {
         try {
             await axiosInstance.post(`/orders/${orderId}/request`);
@@ -84,6 +174,30 @@ const OrdersPage = () => {
     return (
         <div className="orders-container">
             <div className="orders-wrapper">
+                <div className="filters">
+                    <label>Категория:</label>
+                    <select value={selectedCategory} onChange={handleCategoryChange}>
+                        <option value="">Все категории</option>
+                        {categories.map(category => (
+                            <option key={category.id} value={category.id}>{category.name}</option>
+                        ))}
+                    </select>
+
+                    <label>Подкатегория:</label>
+                    <select value={selectedSubcategory} onChange={handleSubcategoryChange} disabled={!selectedCategory}>
+                        <option value="">Все подкатегории</option>
+                        {subcategories.map(subcategory => (
+                            <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                        ))}
+                    </select>
+
+                    {/* ✅ Кнопка для поиска только по категории */}
+                    <button onClick={handleCategorySearch} disabled={!selectedCategory}>
+                        Поиск в категории
+                    </button>
+                </div>
+
+
                 {orders.length > 0 ? (
                     <ul className="orders-list">
                         {orders.map((order) => {
@@ -102,8 +216,12 @@ const OrdersPage = () => {
 
                                         <div className="order-left">
                                             <p><strong>Тип заказа:</strong> {order.type}</p>
-                                            <p><strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}</p>
-                                            <p><strong>Подкатегория:</strong> {order.subcategory ? order.subcategory.name : 'Не указано'}</p>
+                                            <p>
+                                                <strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}
+                                            </p>
+                                            <p>
+                                                <strong>Подкатегория:</strong> {order.subcategory ? order.subcategory.name : 'Не указано'}
+                                            </p>
                                             <p><strong>Описание:</strong> {order.description}</p>
                                             <p><strong>Адрес:</strong> {order.address}</p>
                                             <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
@@ -129,11 +247,14 @@ const OrdersPage = () => {
                                     {/* Кнопка для перехода на страницу жалоб для создателя */}
                                     {creator.username && (
                                         <Link to={`/complaints/${order.creatorId}`} className="complaints-button">
-                                        Жалобы на создателя: {creator.complaintsCount || 0}                                       </Link>
+                                            Жалобы на
+                                            создателя: {creator.complaintsCount || 0}                                       </Link>
                                     )}
 
                                     {userId !== order.creatorId && !order.executorId && order.status === 'pending' && (
-                                        <button className="take-order-button" onClick={() => handleRequestOrder(order.id)}>Запросить выполнение</button>
+                                        <button className="take-order-button"
+                                                onClick={() => handleRequestOrder(order.id)}>Запросить
+                                            выполнение</button>
                                     )}
                                 </li>
                             );

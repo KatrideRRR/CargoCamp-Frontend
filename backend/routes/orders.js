@@ -96,42 +96,50 @@ module.exports = (io) => {
         }
     });
 
-    // Получить все заказы
+// Получить все заказы
     router.get('/all', async (req, res) => {
         try {
             // Удаляем старые заказы, не взятые в работу (старше 24 часов)
-            const ordersToDelete = await Order.findAll({
+            await Order.destroy({
                 where: {
                     status: 'pending',
                     createdAt: {
-                        [Sequelize.Op.lt]: moment().subtract(24, 'hours').toDate(), // Заказы старше 24 часов
+                        [Sequelize.Op.lt]: moment().subtract(24, 'hours').toDate(),
                     },
                 },
             });
 
-            // Удаляем старые заказы
-            for (const order of ordersToDelete) {
-                await order.destroy();
-                console.log(`Заказ ${order.id} удален автоматически.`);
-            }
+            console.log("✅ Старые заказы удалены");
 
-            // Получаем все оставшиеся заказы с статусом "pending"
-            const orders = await db.Order.findAll({
-                attributes: ['id', 'createdAt', 'address', 'description', 'workTime', 'images', 'proposedSum', 'creatorId', 'coordinates', 'type', 'executorId', 'status'],
-                where: { status: 'pending' },
+            // Фильтрация по категории и подкатегории
+            const { categoryId, subcategoryId } = req.query;
+            const whereClause = { status: 'pending' };
+
+            if (categoryId) whereClause.categoryId = categoryId;
+            if (subcategoryId) whereClause.subcategoryId = subcategoryId;
+
+            // Запрос заказов с фильтром
+            const orders = await Order.findAll({
+                attributes: [
+                    'id', 'createdAt', 'address', 'description', 'workTime',
+                    'images', 'proposedSum', 'creatorId', 'coordinates',
+                    'type', 'executorId', 'status'
+                ],
+                where: whereClause,
                 include: [
                     { model: db.Category, as: 'category', attributes: ['id', 'name'] },
                     { model: db.Subcategory, as: 'subcategory', attributes: ['id', 'name'] },
                 ],
             });
 
-
+            console.log("📦 Найденные заказы:", orders.length);
             res.json(orders);
         } catch (error) {
-            console.error('Ошибка при получении заказов:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            console.error("❌ Ошибка при получении заказов:", error);
+            res.status(500).json({ message: "Ошибка сервера" });
         }
     });
+
 
     // Get active orders
     router.get('/active-orders', authenticateToken, async (req, res) => {
