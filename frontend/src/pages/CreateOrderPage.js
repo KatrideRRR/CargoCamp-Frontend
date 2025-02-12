@@ -229,13 +229,13 @@ function CreateOrderPage({ currentUserId }) {
                                         ))}
                                     </select>
                                 </div>
-                                <label className="label">Тип заказа</label>
+                                <label className="label">Ключевое слово</label>
                                 <input
                                     className="input"
                                     type="text"
                                     value={formData.type}
                                     onChange={(e) => handleTypeInputChange(e.target.value)}
-                                    placeholder="Введите тип заказа..."
+                                    placeholder="Введите ключевое слово..."
                                     required
                                 />
                                 {suggestions.length > 0 && (

@@ -10,6 +10,81 @@
     box-sizing: border-box;
 }
 
+
+
+/* Контейнер фильтров */
+.filters {
+    display: flex;
+    flex-direction: column; /* Элементы идут друг за другом */
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    background: #f0f8ff; /* Светло-голубой фон */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #b0c4de; /* Голубая рамка */
+    margin-bottom: 20px;
+
+}
+
+/* Общие стили для label */
+.filters label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #004080; /* Темно-синий */
+}
+
+/* Стили для select */
+.filters select {
+    width: 100%; /* Растягиваем на всю ширину контейнера */
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #4682b4; /* Голубая рамка */
+    border-radius: 5px;
+    background-color: #f8f9fa; /* Светлый фон */
+    color: #004080; /* Темно-синий текст */
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    appearance: none; /* Убираем дефолтную стрелку */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%234682b4' d='M2 0L0 2h4zM2 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+}
+
+/* Селект при наведении */
+.filters select:hover {
+    border-color: #1e90ff; /* Ярко-синий */
+}
+
+/* Селект при фокусе */
+.filters select:focus {
+    border-color: #4169e1; /* Темно-голубой */
+    box-shadow: 0 0 5px rgba(65, 105, 225, 0.5);
+}
+
+/* Отключенный селект */
+.filters select:disabled {
+    background-color: #dcdcdc; /* Серый фон */
+    color: #a9a9a9;
+    border-color: #b0c4de;
+    cursor: not-allowed;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 600px) {
+    .filters {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filters select {
+        width: 100%; /* Растягиваем на всю ширину */
+    }
+}
+
 /* Ограничение ширины контента */
 .orders-wrapper {
     width: 100%;

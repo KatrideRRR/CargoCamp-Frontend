@@ -11,6 +11,8 @@
     box-sizing: border-box; /* Для учета внутренних отступов */
     margin-top: 70px;
     margin-bottom: 50px;
+    height: 120vh; /* Добавлено для растяжения контейнера по высоте */
+
 }
 
 /* Центровка формы */
@@ -22,6 +24,7 @@
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     box-sizing: border-box; /* Учитываем padding внутри формы */
+    padding-bottom: 40px;
 }
 
 /* Форматирование формы */
@@ -36,6 +39,10 @@
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 15px;
+    justify-content: center;
+    overflow-y: auto; /* Добавлено для прокрутки */
+    max-height: 300px; /* Ограничение высоты */
+
 }
 
 .image-preview-item {
@@ -45,6 +52,58 @@
     border-radius: 5px;
 }
 
+
+    /* Стили для меток (label) */
+    label {
+        display: block;
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    /* Основные стили для селекта */
+    select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+        outline: none;
+        transition: border-color 0.3s ease-in-out;
+        appearance: none; /* Убирает стандартные стрелочки в браузерах */
+    }
+
+    /* При наведении */
+    select:hover {
+        border-color: #888;
+    }
+
+    /* При фокусе */
+    select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Отключенный селект */
+    select:disabled {
+        background-color: #f2f2f2;
+        color: #aaa;
+        cursor: not-allowed;
+    }
+
+    /* Медиа-запрос для мобильных устройств */
+    @media (max-width: 600px) {
+        label {
+            font-size: 14px;
+        }
+
+        select {
+            font-size: 14px;
+            padding: 8px;
+        }
+    }
 
     @media (max-width: 768px) {
         .container {

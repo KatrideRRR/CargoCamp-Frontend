@@ -190,11 +190,6 @@ const OrdersPage = () => {
                             <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
                         ))}
                     </select>
-
-                    {/* ✅ Кнопка для поиска только по категории */}
-                    <button onClick={handleCategorySearch} disabled={!selectedCategory}>
-                        Поиск в категории
-                    </button>
                 </div>
 
 
