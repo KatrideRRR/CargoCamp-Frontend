@@ -10,8 +10,6 @@
     box-sizing: border-box;
 }
 
-
-
 /* Контейнер фильтров */
 .filters {
     display: flex;
@@ -24,7 +22,6 @@
     border-radius: 8px;
     border: 1px solid #b0c4de; /* Голубая рамка */
     margin-bottom: 20px;
-
 }
 
 /* Общие стили для label */
@@ -153,6 +150,37 @@
     font-weight: 600;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+.create-button {
+    position: fixed; /* Закрепляет кнопку */
+    top: 80px; /* Прижимает к верхней части экрана */
+    left: 50%; /* Центрирует кнопку */
+    transform: translateX(-50%); /* Центрирование */
+    width: 90%; /* Делаем кнопку почти на всю ширину */
+    max-width: 400px; /* Ограничиваем максимальную ширину */
+    padding: 14px 20px; /* Увеличиваем размер кнопки */
+    background: linear-gradient(135deg, #007aff, #005ecb); /* Градиент для стильности */
+    color: white;
+    text-align: center;
+    border-radius: 8px; /* Делаем края более округлыми */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15); /* Добавляем тень */
+    transition: all 0.3s ease;
+    z-index: 1000; /* Поверх всего контента */
+}
+
+.create-button:hover {
+    background: linear-gradient(135deg, #005ecb, #0041a3); /* Темнее при наведении */
+    transform: translateX(-50%) scale(1.05); /* Лёгкое увеличение */
+}
+
+.create-button:active {
+    transform: translateX(-50%) scale(0.98); /* Эффект нажатия */
+}
+
 
 .complaints-button:hover {
     background-color: #007aff;

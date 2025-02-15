@@ -19,6 +19,7 @@ import UserComplaintsPage from './pages/UserComplaintsPage';
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import OrderPage from './pages/OrderPage';
 import UserOrdersPage from './pages/UserOrdersPage';
+import MyOrdersPage from './pages/MyOrdersPage';
 
 const App = () => {
     return (
@@ -40,6 +41,7 @@ const App = () => {
                             <Route path="/messages/:orderId" element={<ChatPage/>} />
                             <Route path="/order/:id" element={<OrderPage />} />
                             <Route path="/user-orders/:userId" element={<UserOrdersPage />} />
+                            <Route path="/my-orders/:userId" element={<MyOrdersPage />} />
                         </Routes>
                         <BottomMenu />
             </UserProvider>

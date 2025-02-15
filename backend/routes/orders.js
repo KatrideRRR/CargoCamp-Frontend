@@ -140,7 +140,6 @@ module.exports = (io) => {
         }
     });
 
-
     // Get active orders
     router.get('/active-orders', authenticateToken, async (req, res) => {
     try {
@@ -165,7 +164,7 @@ module.exports = (io) => {
         try {
             // Ищем заказ по ID, включая данные о пользователе
             const order = await Order.findByPk(id, {
-                include: { model: User, as: 'user', attributes: ['id', 'username', 'phone'] },
+                include: { model: db.User, as: 'user', attributes: ['id', 'username', 'phone'] },
             });
 
             // Если заказ не найден
@@ -450,7 +449,7 @@ module.exports = (io) => {
                     creatorId: userId,
                     status: 'pending',
                 },  // Фильтруем заказы по ID создателя
-                include: { model: User, as: 'user', attributes: ['id', 'username'] },
+                include: { model: db.User, as: 'user', attributes: ['id', 'username'] },
             });
 
             if (!orders.length) {
