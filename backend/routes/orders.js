@@ -8,7 +8,7 @@ const { Op } = require('sequelize');
 const path = require('path');
 const { Sequelize } = require('sequelize');  // Импортируем Sequelize
 const moment = require('moment'); // Для работы с датами
-const { Order } = require('../models'); // Импорт модели Order
+const { Order, User } = require('../models'); // Добавь User
 
 
 // Устанавливаем интервал для проверки заказов (например, каждое утро в 6:00)
@@ -200,20 +200,83 @@ module.exports = (io) => {
                 return res.status(400).json({ message: 'Заказ недоступен' });
             }
 
-            if (order.executorId) {
-                return res.status(400).json({ message: 'Исполнитель уже назначен' });
+            // Загружаем `requestedExecutors` (инициализируем массив, если пусто)
+            let requestedExecutors = [];
+            if (order.requestedExecutors) {
+                try {
+                    requestedExecutors = JSON.parse(order.requestedExecutors);
+                    if (!Array.isArray(requestedExecutors)) {
+                        requestedExecutors = []; // Если вдруг там не массив, сбрасываем
+                    }
+                } catch (error) {
+                    console.error('Ошибка парсинга requestedExecutors:', error);
+                    requestedExecutors = []; // Если ошибка парсинга, делаем новый массив
+                }
             }
 
-            // Назначаем исполнителя, но не переводим в active
-            order.executorId = executorId;
+            // Проверяем, не добавлен ли уже этот исполнитель
+            if (requestedExecutors.includes(executorId)) {
+                return res.status(400).json({ message: 'Вы уже отправили запрос на этот заказ' });
+            }
+
+            // Добавляем ID исполнителя в массив
+            requestedExecutors.push(executorId);
+
+            // Сохраняем обновленный массив в виде строки JSON
+            order.requestedExecutors = JSON.stringify(requestedExecutors);
             await order.save();
 
-            io.emit('orderRequested',
-                { orderId: order.id, creatorId: order.creatorId, executorId: order.executorId });
+            io.emit('orderRequested', {
+                orderId: order.id,
+                creatorId: order.creatorId,
+                requestedExecutors: requestedExecutors
+            });
 
             res.json({ message: 'Запрос на выполнение отправлен заказчику', order });
         } catch (error) {
             console.error('Ошибка при запросе заказа:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    })
+
+    // Получить список пользователей, запросивших заказ
+    router.get('/:id/requested-executors', authenticateToken, async (req, res) => {
+        const { id } = req.params;
+
+        try {
+            const order = await Order.findByPk(id);
+
+            if (!order) {
+                return res.status(404).json({ message: 'Заказ не найден' });
+            }
+
+            // Парсим массив ID исполнителей
+            let requestedExecutors = [];
+            if (order.requestedExecutors) {
+                try {
+                    requestedExecutors = JSON.parse(order.requestedExecutors);
+                    if (!Array.isArray(requestedExecutors)) {
+                        requestedExecutors = [];
+                    }
+                } catch (error) {
+                    console.error('Ошибка парсинга requestedExecutors:', error);
+                    requestedExecutors = [];
+                }
+            }
+
+            if (requestedExecutors.length === 0) {
+                return res.json([]);
+            }
+
+            // Находим пользователей по ID
+            const executors = await User.findAll({
+                where: { id: requestedExecutors },
+                attributes: ['id', 'username', 'rating', 'ratingCount'] // Выбираем нужные поля
+            });
+
+            res.json(executors);
+        } catch (error) {
+            console.error('Ошибка при получении запросивших исполнителей:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     });
@@ -221,9 +284,10 @@ module.exports = (io) => {
     // Get approve for order
     router.post('/:id/approve', authenticateToken, async (req, res) => {
         const { id } = req.params;
+        const { executorId } = req.body;  // Получаем executorId из тела запроса
 
         try {
-            console.log(`⚡ Одобрение заказа ID: ${id} пользователем ID: ${req.user.id}`);
+            console.log(`⚡ Одобрение заказа ID: ${id} для исполнителя ID: ${executorId} пользователем ID: ${req.user.id}`);
 
             const order = await Order.findByPk(id);
 
@@ -237,15 +301,36 @@ module.exports = (io) => {
                 return res.status(403).json({ message: 'Вы не можете одобрить этот заказ' });
             }
 
-            if (!order.executorId) {
-                console.log('❌ Нет исполнителя');
-                return res.status(400).json({ message: 'Нет исполнителя, ожидающего одобрения' });
+            if (!order.requestedExecutors || order.requestedExecutors.length === 0) {
+                console.log('❌ Нет запросов от исполнителей');
+                return res.status(400).json({ message: 'Нет исполнителей, ожидающих одобрения' });
             }
 
-            // Изменение статуса заказа
-            order.status = 'active';
-            await order.save();
-            console.log(`✅ Заказ ${order.id} одобрен!`);
+            // Проверка, что executorId выбранный заказчиком есть в requestedExecutors
+            // Преобразуем строку JSON в массив, если нужно
+            let requestedExecutors = [];
+            try {
+                requestedExecutors = JSON.parse(order.requestedExecutors);
+                if (!Array.isArray(requestedExecutors)) {
+                    requestedExecutors = [];
+                }
+            } catch (error) {
+                console.error('Ошибка парсинга requestedExecutors:', error);
+            }
+
+            if (!requestedExecutors.includes(executorId)) {
+                console.log('❌ Исполнитель не найден среди запросивших');
+                return res.status(400).json({ message: 'Исполнитель не найден среди запросивших' });
+            }
+
+            // Устанавливаем исполнителя и очищаем список запросов
+            order.executorId = executorId;
+            order.requestedExecutors = []; // Очищаем массив запросов
+            order.status = 'active'; // Устанавливаем статус заказа как активный
+
+            await order.save(); // Сохраняем изменения в базе данных
+
+            console.log(`✅ Заказ ${order.id} одобрен, исполнитель выбран!`);
 
             // Обновление списка заказов
             io.emit('orderUpdated');
@@ -262,7 +347,7 @@ module.exports = (io) => {
                 message: 'Вы успешно одобрили заказ!',
             });
 
-            res.json({ message: 'Заказ одобрен!', order });
+            res.json({ message: 'Заказ одобрен и исполнитель выбран!', order });
         } catch (error) {
             console.error('❌ Ошибка при одобрении заказа:', error);
             res.status(500).json({ message: 'Ошибка сервера' });

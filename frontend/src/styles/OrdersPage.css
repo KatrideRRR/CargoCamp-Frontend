@@ -180,7 +180,11 @@
 .create-button:active {
     transform: translateX(-50%) scale(0.98); /* Эффект нажатия */
 }
-
+@media (max-width: 600px) {
+    .create-button {
+    max-width:300px ;
+    }
+}
 
 .complaints-button:hover {
     background-color: #007aff;

@@ -38,7 +38,9 @@ module.exports = (sequelize) => {
             completedAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
             createdAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
             categoryId: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'Category', key: 'id' } },
-            subcategoryId: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'Subcategory', key: 'id' } },
+            subcategoryId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'Subcategory', key: 'id' } },
+            requestedExecutors: {type: DataTypes.JSON, allowNull: false, defaultValue: []
+            }
         },
         {
             sequelize,

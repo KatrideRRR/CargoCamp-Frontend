@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {useParams, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import '../styles/OrdersPage.css';
+import axiosInstance from "../utils/axiosInstance";
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 const MyOrdersPage = () => {
     const { userId } = useParams(); // Получаем ID пользователя из URL
@@ -19,7 +23,25 @@ const MyOrdersPage = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                setOrders(response.data);
+                const ordersData = response.data;
+
+                // Запрашиваем пользователей, запросивших каждый заказ
+                const ordersWithExecutors = await Promise.all(
+                    ordersData.map(async (order) => {
+                        try {
+                            const executorsResponse = await axios.get(
+                                `http://localhost:5000/api/orders/${order.id}/requested-executors`,
+                                { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            return { ...order, requestedExecutors: executorsResponse.data };
+                        } catch (error) {
+                            console.error(`Ошибка загрузки исполнителей для заказа ${order.id}:`, error);
+                            return { ...order, requestedExecutors: [] };
+                        }
+                    })
+                );
+
+                setOrders(ordersWithExecutors);
             } catch (err) {
                 console.error('Ошибка при загрузке заказов:', err);
                 setError('Ошибка при загрузке заказов.');
@@ -27,6 +49,7 @@ const MyOrdersPage = () => {
                 setLoading(false);
             }
         };
+
 
         // Проверяем, совпадает ли userId с ID авторизованного пользователя
         const checkAuthUser = async () => {
@@ -48,8 +71,23 @@ const MyOrdersPage = () => {
         };
 
         checkAuthUser();
+
+        socket.on('orderUpdated', fetchOrders);
+        return () => {
+            socket.off('orderUpdated', fetchOrders);
+        };
     }, [userId, navigate]);
 
+
+    const approveExecutor = async (orderId, executorId) => {
+        try {
+            await axiosInstance.post(`/orders/${orderId}/approve`, { executorId });
+            alert('Исполнитель одобрен!');
+        } catch (error) {
+            console.error('Ошибка при одобрении исполнителя:', error);
+            alert('Не удалось одобрить исполнителя');
+        }
+    };
     return (
         <div className="container">
             <div className="orders-wrapper">
@@ -81,6 +119,23 @@ const MyOrdersPage = () => {
                                             <p><strong>Описание:</strong> {order.description}</p>
                                             <p><strong>Адрес:</strong> {order.address}</p>
                                             <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                            {Array.isArray(order.requestedExecutors) && order.requestedExecutors.length > 0 ? (
+                                                <div className="executors-list">
+                                                    <strong>Исполнители, запросившие заказ:</strong>
+                                                    <ul>
+                                                        {order.requestedExecutors.map((executor) => (
+                                                            <li key={executor.id}>
+                                                                {executor.username} {executor.id} (Рейтинг: {executor.rating || 'Нет'} ⭐,
+                                                                Оценок: {executor.ratingCount || 0})
+                                                                <button onClick={() => approveExecutor(order.id, executor.id)}>Одобрить</button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ) : (
+                                                <p>Нет запросов на выполнение</p>
+                                            )}
+
 
                                         </div>
 

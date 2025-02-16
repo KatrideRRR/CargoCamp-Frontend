@@ -49,7 +49,7 @@ export const ModalProvider = ({ children }) => {
                 console.log("🔔 Получен запрос на выполнение заказа:", data);
 
                 if (data.creatorId === userId) {
-                    const executorInfo = await fetchExecutorData(data.executorId);
+                    const executorInfo = await fetchExecutorData(data.requestedExecutors);
 
                     if (executorInfo) {
                         setModalData({
@@ -111,9 +111,13 @@ export const ModalProvider = ({ children }) => {
         setModalData(null);
     };
 
-    const handleApproveOrder = async (orderId) => {
+    const handleApproveOrder = async (orderId, executorId) => {
         try {
-            await axiosInstance.post(`/orders/${orderId}/approve`);
+            console.log(`👍 Одобрение заказа ${orderId} для исполнителя ${executorId}`);
+            await axiosInstance.post(`/orders/${orderId}/approve`, {
+                executorId: executorId,
+            });
+
             closeModal();
         } catch (error) {
             console.error("❌ Ошибка при одобрении заказа:", error);
