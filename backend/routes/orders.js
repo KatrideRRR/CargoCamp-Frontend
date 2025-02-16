@@ -10,7 +10,6 @@ const { Sequelize } = require('sequelize');  // Импортируем Sequelize
 const moment = require('moment'); // Для работы с датами
 const { Order, User } = require('../models'); // Добавь User
 
-
 // Устанавливаем интервал для проверки заказов (например, каждое утро в 6:00)
 setInterval(async () => {
     try {
@@ -96,7 +95,7 @@ module.exports = (io) => {
         }
     });
 
-// Получить все заказы
+    // Получить все заказы
     router.get('/all', async (req, res) => {
         try {
             // Удаляем старые заказы, не взятые в работу (старше 24 часов)

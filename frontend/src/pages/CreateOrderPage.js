@@ -16,18 +16,9 @@ function CreateOrderPage({ currentUserId }) {
         type: "",
     });
 
-    const predefinedTypes = [
-        "Вывоз мусора",
-        "Переезд",
-        "Электрик",
-        "Плиточник",
-        "Сантехник",
-        "Грузчик"
-    ];
     const [error, setError] = useState("");
     const [markerPosition, setMarkerPosition] = useState(null);
     const navigate = useNavigate();
-    const [suggestions, setSuggestions] = useState([]);
     const currentDate = new Date(); // Текущая дата и время
     const [images, setImages] = useState([]); // Состояние для хранения выбранных изображений
     const [category, setCategory] = useState([]);
@@ -87,15 +78,6 @@ function CreateOrderPage({ currentUserId }) {
 
     const handleTypeInputChange = (value) => {
         setFormData({ ...formData, type: value });
-        const filteredSuggestions = predefinedTypes.filter((type) =>
-            type.toLowerCase().includes(value.toLowerCase())
-        );
-        setSuggestions(filteredSuggestions);
-    };
-
-    const handleSuggestionClick = (suggestion) => {
-        setFormData({ ...formData, type: suggestion });
-        setSuggestions([]);
     };
 
     useEffect(() => {
@@ -238,19 +220,7 @@ function CreateOrderPage({ currentUserId }) {
                                     placeholder="Введите ключевое слово..."
                                     required
                                 />
-                                {suggestions.length > 0 && (
-                                    <ul className="suggestions">
-                                        {suggestions.map((suggestion, index) => (
-                                            <li
-                                                key={index}
-                                                className="suggestion-item"
-                                                onClick={() => handleSuggestionClick(suggestion)}
-                                            >
-                                                {suggestion}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+
                             </div>
 
                             <div className="input-group">

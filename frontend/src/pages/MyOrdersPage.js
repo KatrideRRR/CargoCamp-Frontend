@@ -17,6 +17,8 @@ const MyOrdersPage = () => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
+                setError(''); // Очистка ошибки перед загрузкой
+
                 const token = localStorage.getItem('authToken');
                 const response = await axiosInstance.get(`/orders/creator/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -24,7 +26,11 @@ const MyOrdersPage = () => {
 
                 const ordersData = response.data;
 
-                // Получаем список запрашиваемых исполнителей
+                if (!ordersData || ordersData.length === 0) {
+                    setOrders([]); // Устанавливаем пустой массив
+                    return;
+                }
+
                 const ordersWithExecutors = await Promise.all(
                     ordersData.map(async (order) => {
                         try {
@@ -43,11 +49,11 @@ const MyOrdersPage = () => {
                 setOrders(ordersWithExecutors);
             } catch (err) {
                 console.error('Ошибка при загрузке заказов:', err);
-                setError('Ошибка при загрузке заказов.');
             } finally {
                 setLoading(false);
             }
         };
+
 
         // Проверяем авторизованного пользователя
         const checkAuthUser = async () => {

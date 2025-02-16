@@ -44,16 +44,6 @@ export const ModalProvider = ({ children }) => {
         if (userId) {
             console.log("🔄 Подключаем WebSocket для пользователя:", userId);
 
-            // Слушаем события для заказчика
-            socket.on('orderRequested', async (data) => {
-                console.log("🔔 Получен запрос на выполнение заказа:", data);
-
-                if (data.creatorId === userId) {
-                    const executorInfo = await fetchExecutorData(data.requestedExecutors);
-
-
-                }
-            });
 
             // Слушаем уведомления для исполнителя
             socket.on('orderApproved', (data) => {
@@ -84,7 +74,6 @@ export const ModalProvider = ({ children }) => {
 
 
             return () => {
-                socket.off('orderRequested');
                 socket.off('orderApproved');
                 socket.off('orderCompleted');
             };
