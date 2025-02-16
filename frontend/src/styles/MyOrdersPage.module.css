@@ -1,0 +1,61 @@
+.container {
+    max-width: 500px;
+    margin: 100px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.ordersWrapper {
+    text-align: left;
+}
+
+.createButton {
+    display: block;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.createButton:hover {
+    background-color: #0056b3;
+}
+
+.ordersList {
+    list-style: none;
+    padding: 0;
+}
+
+.orderCard {
+    padding: 15px;
+    border-radius: 5px;
+    background: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.orderImage {
+    width: 100px;
+    height: auto;
+    margin-top: 10px;
+}
+
+.complaintButton {
+    background-color: #f44336;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+}
+
+.approveButton {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+}

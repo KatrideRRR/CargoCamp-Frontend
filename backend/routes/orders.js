@@ -533,7 +533,12 @@ module.exports = (io) => {
                     creatorId: userId,
                     status: 'pending',
                 },  // Фильтруем заказы по ID создателя
-                include: { model: db.User, as: 'user', attributes: ['id', 'username'] },
+                include: [
+                    { model: db.Category, as: 'category', attributes: ['id', 'name'] },
+                    { model: db.Subcategory, as: 'subcategory', attributes: ['id', 'name'] },
+                    { model: db.User, as: 'user', attributes: ['id', 'username'] }
+                ]
+
             });
 
             if (!orders.length) {

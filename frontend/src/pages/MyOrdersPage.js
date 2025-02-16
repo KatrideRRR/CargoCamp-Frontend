@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import io from 'socket.io-client';
-import '../styles/OrdersPage.css';
+import styles from '../styles/MyOrdersPage.module.css'; // Используем модульные стили
 
 const socket = io('http://localhost:5000');
 
@@ -17,19 +17,14 @@ const MyOrdersPage = () => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-                setError(''); // Очистка ошибки перед загрузкой
+                setError('');
 
                 const token = localStorage.getItem('authToken');
                 const response = await axiosInstance.get(`/orders/creator/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                const ordersData = response.data;
-
-                if (!ordersData || ordersData.length === 0) {
-                    setOrders([]); // Устанавливаем пустой массив
-                    return;
-                }
+                const ordersData = response.data || [];
 
                 const ordersWithExecutors = await Promise.all(
                     ordersData.map(async (order) => {
@@ -54,8 +49,6 @@ const MyOrdersPage = () => {
             }
         };
 
-
-        // Проверяем авторизованного пользователя
         const checkAuthUser = async () => {
             try {
                 const token = localStorage.getItem('authToken');
@@ -76,7 +69,6 @@ const MyOrdersPage = () => {
 
         checkAuthUser();
 
-        // Подписка на обновление заказов через WebSocket
         socket.on('orderUpdated', fetchOrders);
         return () => {
             socket.off('orderUpdated', fetchOrders);
@@ -101,39 +93,39 @@ const MyOrdersPage = () => {
     };
 
     return (
-        <div className="container">
-            <div className="orders-wrapper">
-                <Link to="/create-order" className="create-button">
+        <div className={styles.container}>
+            <div className={styles.ordersWrapper}>
+                <Link to="/create-order" className={styles.createButton}>
                     Разместить заказ
                 </Link>
 
                 {loading ? (
                     <p>Загрузка заказов...</p>
                 ) : error ? (
-                    <p className="error-message">{error}</p>
+                    <p className={styles.errorMessage}>{error}</p>
                 ) : orders.length > 0 ? (
-                    <ul className="orders-list">
+                    <ul className={styles.ordersList}>
                         {orders.map((order) => (
-                            <li className="order-card" key={order.id}>
-                                <div className="order-content">
-                                    <div className="order-header">
-                                        <p className="order-title">
-                                            <strong>Заказ №{order.id}</strong> от заказчика с ID {order.creatorId}.
+                            <li className={styles.orderCard} key={order.id}>
+                                <div className={styles.orderContent}>
+                                    <div className={styles.orderHeader}>
+                                        <p className={styles.orderTitle}>
+                                            <strong>Заказ №{order.id}</strong> .
                                             Создан {new Date(order.createdAt).toLocaleString()}
                                         </p>
                                     </div>
 
-                                    <div className="order-left">
-                                        <p><strong>Тип заказа:</strong> {order.type}</p>
+                                    <div className={styles.orderLeft}>
+                                        <p><strong>Название заказа:</strong> {order.type}</p>
                                         <p><strong>Категория:</strong> {order.category?.name || 'Не указано'}</p>
                                         <p><strong>Подкатегория:</strong> {order.subcategory?.name || 'Не указано'}</p>
                                         <p><strong>Описание:</strong> {order.description}</p>
-                                        <p><strong>Адрес:</strong> {order.address}</p>
                                         <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
                                     </div>
+
                                     {Array.isArray(order.images) && order.images.length > 0 ? (
                                         order.images.map((image, index) => (
-                                            <img key={index} src={`http://localhost:5000${image}`} alt={`Order Image ${index + 1}`} className="order-image"/>
+                                            <img key={index} src={`http://localhost:5000${image}`} alt={`Order Image ${index + 1}`} className={styles.orderImage} />
                                         ))
                                     ) : (
                                         <p>Изображений нет</p>
@@ -179,7 +171,7 @@ const MyOrdersPage = () => {
                         ))}
                     </ul>
                 ) : (
-                    <p className="no-orders">Нет доступных заказов.</p>
+                    <p className={styles.noOrders}>Нет доступных заказов.</p>
                 )}
             </div>
         </div>

@@ -153,10 +153,6 @@ const OrdersPage = () => {
         }
     };
 
-
-
-
-
     const handleRequestOrder = async (orderId) => {
         try {
             await axiosInstance.post(`/orders/${orderId}/request`);
@@ -210,7 +206,7 @@ const OrdersPage = () => {
                                         </div>
 
                                         <div className="order-left">
-                                            <p><strong>Тип заказа:</strong> {order.type}</p>
+                                            <p><strong>Название заказа:</strong> {order.type}</p>
                                             <p>
                                                 <strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}
                                             </p>
