@@ -185,6 +185,74 @@
     max-width:300px ;
     }
 }
+.executors-list {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.executors-list strong {
+    display: block;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.executors-list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.executors-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.executors-list li:last-child {
+    border-bottom: none;
+}
+
+.executors-list button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.executors-list button:hover {
+    background-color: #45a049;
+}
+
+.executors-list li .executor-info {
+    font-size: 0.9em;
+    color: #555;
+}
+
+.executors-list li .executor-info .rating {
+    color: gold;
+    margin-right: 5px;
+}
+
+.executors-list li .executor-info .count {
+    color: #777;
+}
+
+.executors-list p {
+    font-style: italic;
+    color: #777;
+    margin-top: 20px;
+}
+
 
 .complaints-button:hover {
     background-color: #007aff;

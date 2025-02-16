@@ -51,19 +51,7 @@ export const ModalProvider = ({ children }) => {
                 if (data.creatorId === userId) {
                     const executorInfo = await fetchExecutorData(data.requestedExecutors);
 
-                    if (executorInfo) {
-                        setModalData({
-                            title: "Запрос на выполнение заказа",
-                            description: `Пользователь ${executorInfo.username} хочет выполнить ваш заказ. 
-                              📊 Рейтинг: ${executorInfo.rating || "Нет данных"} ⭐
-                              🚨 Жалобы: ${executorInfo.complaintsCount || 0}
-                              Номер заказа: ${data.orderId}`,
-                            onConfirm: () => handleApproveOrder(data.orderId),
-                            onCancel: () => handleRejectOrder(data.orderId),
-                            executorId: executorInfo.id, // Добавляем ID исполнителя для перехода на страницу жалоб
-                            orderId: data.orderId // Сохраняем ID заказа
-                        });
-                    }
+
                 }
             });
 

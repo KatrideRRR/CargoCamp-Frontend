@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import {useParams, useNavigate, Link} from 'react-router-dom';
-import axios from 'axios';
-import '../styles/OrdersPage.css';
-import axiosInstance from "../utils/axiosInstance";
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import axiosInstance from '../utils/axiosInstance';
 import io from 'socket.io-client';
+import '../styles/OrdersPage.css';
 
 const socket = io('http://localhost:5000');
 
 const MyOrdersPage = () => {
-    const { userId } = useParams(); // Получаем ID пользователя из URL
+    const { userId } = useParams();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
-
         const fetchOrders = async () => {
             try {
+                setLoading(true);
                 const token = localStorage.getItem('authToken');
-                const response = await axios.get(`http://localhost:5000/api/orders/creator/${userId}`, {
+                const response = await axiosInstance.get(`/orders/creator/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
                 const ordersData = response.data;
 
-                // Запрашиваем пользователей, запросивших каждый заказ
+                // Получаем список запрашиваемых исполнителей
                 const ordersWithExecutors = await Promise.all(
                     ordersData.map(async (order) => {
                         try {
-                            const executorsResponse = await axios.get(
-                                `http://localhost:5000/api/orders/${order.id}/requested-executors`,
+                            const executorsResponse = await axiosInstance.get(
+                                `/orders/${order.id}/requested-executors`,
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
-                            return { ...order, requestedExecutors: executorsResponse.data };
+                            return { ...order, requestedExecutors: executorsResponse.data || [] };
                         } catch (error) {
                             console.error(`Ошибка загрузки исполнителей для заказа ${order.id}:`, error);
                             return { ...order, requestedExecutors: [] };
@@ -50,17 +49,16 @@ const MyOrdersPage = () => {
             }
         };
 
-
-        // Проверяем, совпадает ли userId с ID авторизованного пользователя
+        // Проверяем авторизованного пользователя
         const checkAuthUser = async () => {
             try {
                 const token = localStorage.getItem('authToken');
-                const profileResponse = await axios.get('http://localhost:5000/api/auth/profile', {
+                const profileResponse = await axiosInstance.get('/auth/profile', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
                 if (profileResponse.data.id !== Number(userId)) {
-                    navigate('/'); // Перенаправляем, если пользователь пытается зайти в чужие заказы
+                    navigate('/');
                 } else {
                     fetchOrders();
                 }
@@ -72,86 +70,107 @@ const MyOrdersPage = () => {
 
         checkAuthUser();
 
+        // Подписка на обновление заказов через WebSocket
         socket.on('orderUpdated', fetchOrders);
         return () => {
             socket.off('orderUpdated', fetchOrders);
         };
     }, [userId, navigate]);
 
-
     const approveExecutor = async (orderId, executorId) => {
         try {
             await axiosInstance.post(`/orders/${orderId}/approve`, { executorId });
             alert('Исполнитель одобрен!');
+            setOrders((prevOrders) =>
+                prevOrders.map((order) =>
+                    order.id === orderId
+                        ? { ...order, requestedExecutors: order.requestedExecutors.filter((e) => e.id !== executorId) }
+                        : order
+                )
+            );
         } catch (error) {
             console.error('Ошибка при одобрении исполнителя:', error);
             alert('Не удалось одобрить исполнителя');
         }
     };
+
     return (
         <div className="container">
             <div className="orders-wrapper">
-                <Link to={`/create-order`} className="create-button">
-                   Разместить заказ</Link>
+                <Link to="/create-order" className="create-button">
+                    Разместить заказ
+                </Link>
 
-                {orders.length > 0 ? (
+                {loading ? (
+                    <p>Загрузка заказов...</p>
+                ) : error ? (
+                    <p className="error-message">{error}</p>
+                ) : orders.length > 0 ? (
                     <ul className="orders-list">
-                        {orders.map((order) => {
-                            return (
-                                <li className="order-card" key={order.id}>
-                                    <div className="order-content">
-                                        <div className="order-header">
-                                            <p className="order-title">
-                                                <strong>Заказ номер {order.id}</strong> от заказчика с
-                                                ID {order.creatorId}.
-                                                Создан {new Date(order.createdAt).toLocaleString()}
-                                            </p>
-                                        </div>
-
-                                        <div className="order-left">
-                                            <p><strong>Тип заказа:</strong> {order.type}</p>
-                                            <p>
-                                                <strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}
-                                            </p>
-                                            <p>
-                                                <strong>Подкатегория:</strong> {order.subcategory ? order.subcategory.name : 'Не указано'}
-                                            </p>
-                                            <p><strong>Описание:</strong> {order.description}</p>
-                                            <p><strong>Адрес:</strong> {order.address}</p>
-                                            <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                            {Array.isArray(order.requestedExecutors) && order.requestedExecutors.length > 0 ? (
-                                                <div className="executors-list">
-                                                    <strong>Исполнители, запросившие заказ:</strong>
-                                                    <ul>
-                                                        {order.requestedExecutors.map((executor) => (
-                                                            <li key={executor.id}>
-                                                                {executor.username} {executor.id} (Рейтинг: {executor.rating || 'Нет'} ⭐,
-                                                                Оценок: {executor.ratingCount || 0})
-                                                                <button onClick={() => approveExecutor(order.id, executor.id)}>Одобрить</button>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            ) : (
-                                                <p>Нет запросов на выполнение</p>
-                                            )}
-
-
-                                        </div>
-
-                                        {Array.isArray(order.images) && order.images.length > 0 ? (
-                                            order.images.map((image, index) => {
-                                                const imageUrl = `http://localhost:5000${image}`;
-                                                return <img key={index} src={imageUrl} alt={`Order Image ${index + 1}`}
-                                                            className="order-image"/>;
-                                            })
-                                        ) : (
-                                            <p>Изображений нет</p>
-                                        )}
+                        {orders.map((order) => (
+                            <li className="order-card" key={order.id}>
+                                <div className="order-content">
+                                    <div className="order-header">
+                                        <p className="order-title">
+                                            <strong>Заказ №{order.id}</strong> от заказчика с ID {order.creatorId}.
+                                            Создан {new Date(order.createdAt).toLocaleString()}
+                                        </p>
                                     </div>
-                                </li>
-                            );
-                        })}
+
+                                    <div className="order-left">
+                                        <p><strong>Тип заказа:</strong> {order.type}</p>
+                                        <p><strong>Категория:</strong> {order.category?.name || 'Не указано'}</p>
+                                        <p><strong>Подкатегория:</strong> {order.subcategory?.name || 'Не указано'}</p>
+                                        <p><strong>Описание:</strong> {order.description}</p>
+                                        <p><strong>Адрес:</strong> {order.address}</p>
+                                        <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
+                                    </div>
+                                    {Array.isArray(order.images) && order.images.length > 0 ? (
+                                        order.images.map((image, index) => (
+                                            <img key={index} src={`http://localhost:5000${image}`} alt={`Order Image ${index + 1}`} className="order-image"/>
+                                        ))
+                                    ) : (
+                                        <p>Изображений нет</p>
+                                    )}
+
+                                    {Array.isArray(order.requestedExecutors) && order.requestedExecutors.length > 0 ? (
+                                        <div className="executors-list">
+                                            <strong>Исполнители, запросившие заказ:</strong>
+                                            <ul>
+                                                {order.requestedExecutors.map((executor) => (
+                                                    <li key={executor.id}>
+                                                        {executor.username} {executor.id} (Рейтинг: {executor.rating || 'Нет'} ⭐,
+                                                        Оценок: {executor.ratingCount || 0})
+                                                        <button
+                                                            onClick={() => navigate(`/complaints/${executor.id}`)}
+                                                            style={{
+                                                                backgroundColor: '#f44336',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                padding: '8px 16px',
+                                                                borderRadius: '5px',
+                                                                cursor: 'pointer',
+                                                                fontSize: '0.9em',
+                                                                transition: 'background-color 0.3s',
+                                                            }}
+                                                        >
+                                                            Жалобы
+                                                        </button>
+
+
+                                                        <button
+                                                            onClick={() => approveExecutor(order.id, executor.id)}>Одобрить
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <p>Нет запросов на выполнение</p>
+                                    )}
+                                </div>
+                            </li>
+                        ))}
                     </ul>
                 ) : (
                     <p className="no-orders">Нет доступных заказов.</p>
