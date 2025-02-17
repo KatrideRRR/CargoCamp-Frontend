@@ -25,6 +25,7 @@ function CreateOrderPage({ currentUserId }) {
     const [subcategory, setSubcategory] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
+    const [addressSuggestions, setAddressSuggestions] = useState([]); // Подсказки для адреса
 
 
     const handleImageChange = (event) => {
@@ -92,6 +93,7 @@ function CreateOrderPage({ currentUserId }) {
         const address = e.target.value;
         setFormData({ ...formData, address });
 
+        // Если вводим хотя бы 3 символа, начинаем запрашивать подсказки
         if (address.length > 3) {
             try {
                 const response = await fetch(
@@ -100,19 +102,35 @@ function CreateOrderPage({ currentUserId }) {
                     )}&format=json`
                 );
                 const data = await response.json();
-                const coordinates =
-                    data.response.GeoObjectCollection.featureMember[0]?.GeoObject.Point.pos
-                        .split(" ")
-                        .map(Number);
-
-                if (coordinates) {
-                    setMarkerPosition([coordinates[1], coordinates[0]]);
-                }
+                const suggestions = data.response.GeoObjectCollection.featureMember.map(item => item.GeoObject.name);
+                setAddressSuggestions(suggestions);
             } catch (err) {
                 console.error("Ошибка геокодирования:", err);
+                setAddressSuggestions([]);
             }
+        } else {
+            setAddressSuggestions([]);
         }
     };
+
+    const handleAddressSelect = async (address) => {
+        setFormData({ ...formData, address });
+        setAddressSuggestions([]); // Закрываем список подсказок
+
+        // Запрос координат для выбранного адреса
+        try {
+            const response = await fetch(
+                `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(address)}&format=json`
+            );
+            const data = await response.json();
+            const coordinates = data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ');
+            const [longitude, latitude] = coordinates.map(coord => parseFloat(coord));
+            setMarkerPosition([latitude, longitude]); // Обновляем позицию маркера
+        } catch (err) {
+            console.error("Ошибка получения координат:", err);
+        }
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -244,6 +262,16 @@ function CreateOrderPage({ currentUserId }) {
                                     onChange={handleAddressChange}
                                     required
                                 />
+                                {addressSuggestions.length > 0 && (
+                                    <ul className="address-suggestions">
+                                        {addressSuggestions.map((address, index) => (
+                                            <li key={index} onClick={() => handleAddressSelect(address)}>
+                                                {address}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
                             </div>
 
                             <div className="map-container">
