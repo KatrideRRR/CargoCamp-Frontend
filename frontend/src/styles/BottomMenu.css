@@ -13,9 +13,16 @@
     z-index: 1000;
 }
 .menu-center.highlight {
-    background-color: #ffcc00;
-    transition: background-color 0.3s ease-in-out;
+    background-color: #ffcc00; /* Желтый цвет, можно изменить */
+    animation: pulse 1.5s infinite;
 }
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 5px rgba(255, 204, 0, 0.6); }
+    50% { box-shadow: 0 0 15px rgba(255, 204, 0, 1); }
+    100% { box-shadow: 0 0 5px rgba(255, 204, 0, 0.6); }
+}
+
 
 .menu-left,
 .menu-right {
