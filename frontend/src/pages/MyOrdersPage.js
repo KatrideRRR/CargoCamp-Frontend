@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import io from 'socket.io-client';
-import styles from '../styles/MyOrdersPage.module.css'; // Используем модульные стили
+import styles from '../styles/MyOrdersPage.module.css';
+import {AuthContext} from "../utils/authContext";
 
 const socket = io('http://localhost:5000');
 
@@ -11,6 +12,7 @@ const MyOrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { hasNewRequests, setHasNewRequests } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -33,7 +35,7 @@ const MyOrdersPage = () => {
                                 `/orders/${order.id}/requested-executors`,
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
-                            return { ...order, requestedExecutors: executorsResponse.data || [] };
+                            return { ...order, requestedExecutors: Array.isArray(executorsResponse.data) ? executorsResponse.data : [] };
                         } catch (error) {
                             console.error(`Ошибка загрузки исполнителей для заказа ${order.id}:`, error);
                             return { ...order, requestedExecutors: [] };
@@ -42,6 +44,7 @@ const MyOrdersPage = () => {
                 );
 
                 setOrders(ordersWithExecutors);
+
             } catch (err) {
                 console.error('Ошибка при загрузке заказов:', err);
             } finally {
@@ -61,6 +64,13 @@ const MyOrdersPage = () => {
                 } else {
                     fetchOrders();
                 }
+
+                // Подписка на событие получения запроса от исполнителя
+                socket.on(`orderRequest-${userId}`, (data) => {
+                    setHasNewRequests(true); // Подсвечиваем кнопку
+                    fetchOrders(); // Обновляем список заказов
+                });
+
             } catch (err) {
                 console.error('Ошибка проверки пользователя:', err);
                 navigate('/login');
@@ -69,11 +79,20 @@ const MyOrdersPage = () => {
 
         checkAuthUser();
 
+        const handleOrderRequest = () => {
+            console.log('🔔 Получен запрос на заказ, обновляем список');
+            fetchOrders();
+        };
+
+        socket.on('orderRequest', handleOrderRequest);
         socket.on('orderUpdated', fetchOrders);
+
         return () => {
+            socket.off('orderRequest', handleOrderRequest);
             socket.off('orderUpdated', fetchOrders);
         };
     }, [userId, navigate]);
+
 
     const approveExecutor = async (orderId, executorId) => {
         try {
@@ -86,6 +105,7 @@ const MyOrdersPage = () => {
                         : order
                 )
             );
+
         } catch (error) {
             console.error('Ошибка при одобрении исполнителя:', error);
             alert('Не удалось одобрить исполнителя');
@@ -95,7 +115,10 @@ const MyOrdersPage = () => {
     return (
         <div className={styles.container}>
             <div className={styles.ordersWrapper}>
-                <Link to="/create-order" className={styles.createButton}>
+                <Link
+                    to="/create-order"
+                    className={`${styles.createButton} ${hasNewRequests ? styles.newRequest : ''}`}
+                >
                     Разместить заказ
                 </Link>
 
@@ -155,9 +178,10 @@ const MyOrdersPage = () => {
                                                             Жалобы
                                                         </button>
 
-
                                                         <button
-                                                            onClick={() => approveExecutor(order.id, executor.id)}>Одобрить
+                                                            onClick={() => approveExecutor(order.id, executor.id)}
+                                                        >
+                                                            Одобрить
                                                         </button>
                                                     </li>
                                                 ))}

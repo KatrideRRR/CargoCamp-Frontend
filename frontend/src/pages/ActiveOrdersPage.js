@@ -167,11 +167,16 @@ const ActiveOrdersPage = () => {
                                             Создан {new Date(order.createdAt).toLocaleString()}
                                         </p>
                                     </div>
-                                    <p><strong>Тип:</strong> {order.type}</p>
+                                    <p><strong>Название:</strong> {order.type}</p>
+                                    <p>
+                                        <strong>Категория:</strong> {order.category ? order.category.name : 'Не указано'}
+                                    </p>
+                                    <p>
+                                        <strong>Подкатегория:</strong> {order.subcategory ? order.subcategory.name : 'Не указано'}
+                                    </p>
                                     <p><strong>Описание:</strong> {order.description}</p>
                                     <p><strong>Адрес:</strong> {order.address}</p>
                                     <p><strong>Цена:</strong> {order.proposedSum} ₽</p>
-                                    <p><strong>ID исполнителя:</strong> {order.executorId}</p>
                                     {order.photoUrl && (
                                         <img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа"
                                              className="order-photo"/>)}

@@ -12,6 +12,10 @@
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
 }
+.menu-center.highlight {
+    background-color: #ffcc00;
+    transition: background-color 0.3s ease-in-out;
+}
 
 .menu-left,
 .menu-right {

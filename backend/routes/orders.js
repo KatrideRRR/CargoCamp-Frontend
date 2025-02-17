@@ -148,6 +148,11 @@ module.exports = (io) => {
                 status: 'active',
                 [Op.or]: [{ creatorId: userId }, { executorId: userId }],
             },
+            include: [
+                { model: db.Category, as: 'category', attributes: ['id', 'name'] },
+                { model: db.Subcategory, as: 'subcategory', attributes: ['id', 'name'] }
+            ]
+
         });
         res.json(activeOrders);
     } catch (error) {
@@ -183,20 +188,20 @@ module.exports = (io) => {
         }
     });
 
-    // Get request for order
-    router.post('/:id/request', authenticateToken, async (req, res) => {
-        const { id } = req.params;
+// Get request for order
+    router.post("/:id/request", authenticateToken, async (req, res) => {
+        const { id } = req.params; // ID заказа
         const executorId = req.user.id;
 
         try {
             const order = await Order.findByPk(id);
 
             if (!order) {
-                return res.status(404).json({ message: 'Заказ не найден' });
+                return res.status(404).json({ message: "Заказ не найден" });
             }
 
-            if (order.status !== 'pending') {
-                return res.status(400).json({ message: 'Заказ недоступен' });
+            if (order.status !== "pending") {
+                return res.status(400).json({ message: "Заказ недоступен" });
             }
 
             // Загружаем `requestedExecutors` (инициализируем массив, если пусто)
@@ -208,14 +213,14 @@ module.exports = (io) => {
                         requestedExecutors = []; // Если вдруг там не массив, сбрасываем
                     }
                 } catch (error) {
-                    console.error('Ошибка парсинга requestedExecutors:', error);
+                    console.error("Ошибка парсинга requestedExecutors:", error);
                     requestedExecutors = []; // Если ошибка парсинга, делаем новый массив
                 }
             }
 
             // Проверяем, не добавлен ли уже этот исполнитель
             if (requestedExecutors.includes(executorId)) {
-                return res.status(400).json({ message: 'Вы уже отправили запрос на этот заказ' });
+                return res.status(400).json({ message: "Вы уже отправили запрос на этот заказ" });
             }
 
             // Добавляем ID исполнителя в массив
@@ -225,18 +230,20 @@ module.exports = (io) => {
             order.requestedExecutors = JSON.stringify(requestedExecutors);
             await order.save();
 
-            io.emit('orderRequested', {
-                orderId: order.id,
-                creatorId: order.creatorId,
-                requestedExecutors: requestedExecutors
-            });
+            if (order && order.id) {
+                io.emit("orderRequest", { orderId: order.id });
+                console.log("🔥 Сервер отправляет событие с orderId:", order.id);
+            } else {
+                console.error("🔥 Ошибка: order не существует или не имеет id");
+            }
 
-            res.json({ message: 'Запрос на выполнение отправлен заказчику', order });
+
+            res.json({ message: "Запрос на выполнение отправлен заказчику", order });
         } catch (error) {
-            console.error('Ошибка при запросе заказа:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            console.error("Ошибка при запросе заказа:", error);
+            res.status(500).json({ message: "Ошибка сервера" });
         }
-    })
+    });
 
     // Получить список пользователей, запросивших заказ
     router.get('/:id/requested-executors', authenticateToken, async (req, res) => {
@@ -272,8 +279,9 @@ module.exports = (io) => {
                 where: { id: requestedExecutors },
                 attributes: ['id', 'username', 'rating', 'ratingCount'] // Выбираем нужные поля
             });
+            console.log('📡 Ответ сервера:', requestedExecutors);
 
-            res.json(executors);
+            res.json(executors || []);
         } catch (error) {
             console.error('Ошибка при получении запросивших исполнителей:', error);
             res.status(500).json({ message: 'Ошибка сервера' });

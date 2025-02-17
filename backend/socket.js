@@ -33,6 +33,11 @@ function initializeSocket(server) {
             }
         });
 
+        socket.on("sendOrderRequest", () => {
+            console.log("🔔 Получен новый запрос на заказ!");
+            io.emit("orderRequest"); // Оповещаем всех клиентов
+        });
+
         socket.on('disconnect', () => {
             console.log(`🔴 Отключение: ${socket.id}`);
             Object.keys(users).forEach(userId => {
