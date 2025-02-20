@@ -10,6 +10,7 @@ const orderRoutes = require('./routes/orders');
 const authRoutes = require('./routes/auth');
 const messagesRoutes = require('./routes/messages');
 const categoryRouter = require('./routes/category');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,13 +20,14 @@ const io = initializeSocket(server);
 const db = require('./models');
 db.sequelize.sync();
 
-app.use(cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(cors({  origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(bodyParser.json());
 app.use('/api/orders', orderRoutes(io));
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/category', categoryRouter);
+app.use('/api/admin', adminRoutes);
 
 // Database connection
 const Sequelize = require('sequelize');
