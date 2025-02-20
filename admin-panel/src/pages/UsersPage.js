@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "../styles/UsersPage.css"; // Импорт стилей
+import {useNavigate} from "react-router-dom";
 
 function UsersPage() {
     const [users, setUsers] = useState([]);
-    const [searchQuery, setSearchQuery] = useState(""); // Поле для поиска
+    const [searchQuery, setSearchQuery] = useState("");
     const [filteredUsers, setFilteredUsers] = useState([]);
     const token = localStorage.getItem("authToken");
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get("http://localhost:5000/api/admin/users", {
@@ -13,7 +16,7 @@ function UsersPage() {
         })
             .then((response) => {
                 setUsers(response.data);
-                setFilteredUsers(response.data); // Изначально отображаем всех пользователей
+                setFilteredUsers(response.data);
             })
             .catch((error) => console.error("Ошибка загрузки пользователей", error));
     }, [token]);
@@ -26,13 +29,12 @@ function UsersPage() {
         setFilteredUsers(filteredUsers.map(user => user.id === id ? { ...user, role: "banned" } : user));
     };
 
-    // Функция поиска пользователей
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
 
         if (query.trim() === "") {
-            setFilteredUsers(users); // Если поле пустое, показываем всех
+            setFilteredUsers(users);
         } else {
             setFilteredUsers(users.filter(user =>
                 user.id.toString().includes(query) || user.phone.includes(query)
@@ -40,26 +42,61 @@ function UsersPage() {
         }
     };
 
+    const handleComplaints = (id) => {
+            navigate(`/users/${id}/complaints`);
+    };
+    const handleOrders = (id) => {
+        navigate(`/user-orders/${id}`);
+    };
+    const handlePhotos = (id) => {
+        navigate(`/user-documents/${id}`);
+    };
+
     return (
-        <div>
+        <div className="users-container">
             <h1>Пользователи</h1>
 
-            {/* Поле для поиска */}
             <input
                 type="text"
+                className="search-input"
                 placeholder="Поиск по ID или номеру телефона"
                 value={searchQuery}
                 onChange={handleSearch}
             />
 
-            <ul>
+            <table className="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Телефон</th>
+                    <th>Дата регистрации</th>
+                    <th>Рейтинг</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
                 {filteredUsers.map((user) => (
-                    <li key={user.id}>
-                        {user.id} {user.username} {user.phone} {user.createdAt} {user.updatedAt} {user.rating} {user.ratingCount} {user.complaintsCount}
-                        {user.role !== "banned" && <button onClick={() => blockUser(user.id)}>Заблокировать</button>}
-                    </li>
+                    <tr key={user.id}>
+                        <td>{user.id}</td>
+                        <td>{user.username}</td>
+                        <td>{user.phone}</td>
+                        <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>{user.rating}</td>
+                        <td>
+                            <div className="action-buttons">
+                                <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы</button>
+                                <button className="orders-button" onClick={() => handleOrders(user.id)}>Заказы</button>
+                                <button className="photos-button" onClick={() => handlePhotos(user.id)}>Фото</button>
+                                {user.role !== "banned" && (
+                                    <button className="block-button" onClick={() => blockUser(user.id)}>Заблокировать</button>
+                                )}
+                            </div>
+                        </td>
+                    </tr>
                 ))}
-            </ul>
+                </tbody>
+            </table>
         </div>
     );
 }

@@ -1,0 +1,98 @@
+.users-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.users-container h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table th, .users-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.users-table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.users-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.users-table tr:hover {
+    background-color: #ddd;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.action-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.block-button {
+    background-color: red;
+    color: white;
+}
+
+.block-button:hover {
+    background-color: darkred;
+}
+
+.complaints-button {
+    background-color: orange;
+    color: white;
+}
+
+.complaints-button:hover {
+    background-color: darkorange;
+}
+
+.orders-button {
+    background-color: green;
+    color: white;
+}
+
+.orders-button:hover {
+    background-color: darkgreen;
+}
+
+.photos-button {
+    background-color: purple;
+    color: white;
+}
+
+.photos-button:hover {
+    background-color: darkpurple;
+}
