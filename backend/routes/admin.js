@@ -114,6 +114,27 @@ router.get('/orders/:id', async (req, res) => {
     }
 });
 
+// Получение информации о пользователе по ID (включая жалобы)
+router.get("/users/:id/complaints", authMiddleware, adminMiddleware, async (req, res) => {
+    const { id } = req.params;
 
+    try {
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+
+        res.json({
+            id: user.id,
+            username: user.username,
+            phone: user.phone,
+            complaints: user.complaints || [],
+        });
+    } catch (error) {
+        console.error("Ошибка при получении пользователя:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 
 module.exports = router;
