@@ -3,6 +3,11 @@ const { authMiddleware, adminMiddleware } = require('../middlewares/adminMiddlew
 const { User, Order, Message } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const NodeGeocoder = require("node-geocoder");
+
+const geocoder = NodeGeocoder({
+    provider: "openstreetmap", // Или другой сервис, который ты используешь
+});
 
 const router = express.Router();
 
@@ -136,5 +141,76 @@ router.get("/users/:id/complaints", authMiddleware, adminMiddleware, async (req,
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
+// routes/adminRoutes.js
+router.get("/users/:userId/orders", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const orders = await Order.findAll({ where: { userId } });
+        res.json({ orders });
+    } catch (error) {
+        console.error("Ошибка при получении заказов пользователя:", error);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Админ создаёт заказ за другого пользователя
+router.post("/create", authMiddleware, adminMiddleware, async (req, res) => {
+        try {
+            const {
+                userId,
+                address,
+                description,
+                workTime,
+                proposedSum,
+                type,
+                categoryId,
+                subcategoryId,
+            } = req.body;
+
+            if (!userId || !address) {
+                return res.status(400).json({ message: "ID пользователя и адрес обязательны" });
+            }
+
+            // Проверяем, существует ли пользователь
+            const user = await User.findByPk(userId);
+            if (!user) {
+                return res.status(404).json({ message: "Пользователь не найден" });
+            }
+
+            // Получаем координаты из геокодера
+            const geoData = await geocoder.geocode(address);
+            if (!geoData.length) {
+                return res.status(404).json({ message: "Адрес не найден" });
+            }
+
+            const { latitude, longitude } = geoData[0];
+            const coordinates = `${latitude},${longitude}`;
+
+            // Собираем фото в массив
+            const photoUrls = req.files ? req.files.map(file => `/uploads/orders/${file.filename}`) : [];
+
+            // Создаем заказ
+            const newOrder = await Order.create({
+                userId,
+                address,
+                description,
+                workTime,
+                proposedSum,
+                coordinates,
+                type,
+                createdAt: new Date().toISOString(),
+                creatorId: userId,
+                status: "pending",
+                categoryId,
+                subcategoryId,
+            });
+            res.status(201).json({ message: "Заказ успешно создан", order: newOrder });
+        } catch (error) {
+            console.error("Ошибка при создании заказа админом:", error);
+            res.status(500).json({ message: "Ошибка сервера" });
+        }
+    }
+);
 
 module.exports = router;

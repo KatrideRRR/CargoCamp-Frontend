@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Добавляем useNavigate
 import axios from "axios";
 import "../styles/UserOrdersPage.css"; // Подключаем стили
 
-function OrdersPage() {
+function UserOrdersPage() {
+    const { userId } = useParams(); // Получаем ID пользователя из URL
     const [orders, setOrders] = useState([]);
-    const [filteredOrders, setFilteredOrders] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = localStorage.getItem("authToken");
-    const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredOrders, setFilteredOrders] = useState([]);
+    const navigate = useNavigate(); // Для перехода на другую страницу
 
     useEffect(() => {
-        axios.get("http://localhost:5000/api/admin/orders", {
+        axios.get(`http://localhost:5000/api/admin/users/${userId}/orders`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((response) => {
-                setOrders(response.data);
-                setFilteredOrders(response.data);
+                setOrders(response.data.orders || []);
+                setFilteredOrders(response.data.orders || []);
                 setLoading(false);
             })
             .catch((error) => {
@@ -26,7 +27,7 @@ function OrdersPage() {
                 setError("Не удалось загрузить заказы");
                 setLoading(false);
             });
-    }, [token]);
+    }, [userId, token]);
 
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
@@ -45,25 +46,12 @@ function OrdersPage() {
         navigate(`/orders/${orderId}`); // Переход к деталям заказа
     };
 
-    const deleteOrder = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/admin/orders/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setOrders(orders.filter(order => order.id !== id));
-            setFilteredOrders(filteredOrders.filter(order => order.id !== id));
-        } catch (error) {
-            console.error("Ошибка удаления заказа", error);
-            alert("Не удалось удалить заказ");
-        }
-    };
-
     if (loading) return <p>Загрузка...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <div className="orders-container">
-            <h1>Все заказы</h1>
+            <h1>Заказы пользователя (ID: {userId})</h1>
             <input
                 type="text"
                 className="search-input"
@@ -73,7 +61,7 @@ function OrdersPage() {
             />
 
             {filteredOrders.length === 0 ? (
-                <p>Нет заказов.</p>
+                <p>У пользователя нет заказов.</p>
             ) : (
                 <table className="orders-table">
                     <thead>
@@ -94,9 +82,6 @@ function OrdersPage() {
                                 <button onClick={() => handleOrderDetails(order.id)}>
                                     Подробнее
                                 </button>
-                                <button className="delete-button" onClick={() => deleteOrder(order.id)}>
-                                    Удалить
-                                </button>
                             </td>
                         </tr>
                     ))}
@@ -107,4 +92,4 @@ function OrdersPage() {
     );
 }
 
-export default OrdersPage;
+export default UserOrdersPage;

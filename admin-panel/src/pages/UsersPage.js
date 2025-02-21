@@ -46,7 +46,7 @@ function UsersPage() {
             navigate(`/users/${id}/complaints`);
     };
     const handleOrders = (id) => {
-        navigate(`/user-orders/${id}`);
+        navigate(`/users/${id}/orders`);
     };
     const handlePhotos = (id) => {
         navigate(`/user-documents/${id}`);

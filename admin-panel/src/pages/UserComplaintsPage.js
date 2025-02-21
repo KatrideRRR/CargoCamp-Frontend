@@ -37,11 +37,22 @@ function UserComplaintsPage() {
             {complaints.length === 0 ? (
                 <p>На этого пользователя нет жалоб.</p>
             ) : (
-                <ul className="complaints-list">
+                <table className="complaints-table">
+                    <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Текст жалобы</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {complaints.map((complaint, index) => (
-                        <li key={index} className="complaint-item">{complaint}</li>
+                        <tr key={index}>
+                            <td>{new Date(complaint.date).toLocaleDateString()}</td>
+                            <td>{complaint.complaintText}</td>
+                        </tr>
                     ))}
-                </ul>
+                    </tbody>
+                </table>
             )}
         </div>
     );

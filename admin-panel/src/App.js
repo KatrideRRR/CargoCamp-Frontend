@@ -8,18 +8,22 @@ import PrivateRoute from "./components/PrivateRoute";
 import MessagesPage from "./pages/MessagesPage";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
 import UserComplaintsPage from "./pages/UserComplaintsPage";
+import UserOrdersPage from "./pages/UserOrdersPage";
+import AdminCreateOrderPage from "./pages/AdminCreateOrderPage";
 
 function App() {
   return (
       <Router>
           <Routes>
-              <Route path="/" element={<LoginPage />} />
+              <Route path="/" element={<PrivateRoute><LoginPage /></PrivateRoute>} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/users" element={<PrivateRoute><UsersPage /></PrivateRoute>} />
               <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
               <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
               <Route path="/orders/:id" element={<PrivateRoute><OrderDetailsPage /></PrivateRoute>} />
               <Route path="/users/:userId/complaints" element={<PrivateRoute><UserComplaintsPage /></PrivateRoute>} />
+              <Route path="/users/:userId/orders" element={<PrivateRoute><UserOrdersPage /></PrivateRoute>} />
+              <Route path="/create" element={<PrivateRoute><AdminCreateOrderPage /></PrivateRoute>} />
           </Routes>
       </Router>
   );
