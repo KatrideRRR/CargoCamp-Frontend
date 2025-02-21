@@ -1,0 +1,40 @@
+.order-details-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.order-details-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.order-info {
+    text-align: left;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.order-info p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.order-info strong {
+    color: #007bff;
+}
+
+.loading-message,
+.error-message,
+.not-found-message {
+    text-align: center;
+    font-size: 18px;
+    color: red;
+    margin-top: 20px;
+}

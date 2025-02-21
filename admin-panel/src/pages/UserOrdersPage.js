@@ -45,6 +45,18 @@ function UserOrdersPage() {
     const handleOrderDetails = (orderId) => {
         navigate(`/orders/${orderId}`); // Переход к деталям заказа
     };
+    const deleteOrder = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/admin/orders/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setOrders(orders.filter(order => order.id !== id));
+            setFilteredOrders(filteredOrders.filter(order => order.id !== id));
+        } catch (error) {
+            console.error("Ошибка удаления заказа", error);
+            alert("Не удалось удалить заказ");
+        }
+    };
 
     if (loading) return <p>Загрузка...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -81,6 +93,9 @@ function UserOrdersPage() {
                             <td>
                                 <button onClick={() => handleOrderDetails(order.id)}>
                                     Подробнее
+                                </button>
+                                <button className="delete-button" onClick={() => deleteOrder(order.id)}>
+                                    Удалить
                                 </button>
                             </td>
                         </tr>
