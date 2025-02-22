@@ -28,6 +28,12 @@ function UserOrdersPage() {
                 setLoading(false);
             });
     }, [userId, token]);
+    console.log("userId:", userId);  // Это для отладки
+
+    const handleCreateOrder = () => {
+        console.log("Переход на создание заказа для userId:", userId);  // Это для отладки
+        navigate(`/create-order/${userId}`); // Должно быть именно userId как строка
+    };
 
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
@@ -58,12 +64,15 @@ function UserOrdersPage() {
         }
     };
 
+
+
     if (loading) return <p>Загрузка...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <div className="orders-container">
             <h1>Заказы пользователя (ID: {userId})</h1>
+
             <input
                 type="text"
                 className="search-input"
@@ -71,6 +80,8 @@ function UserOrdersPage() {
                 value={searchQuery}
                 onChange={handleSearch}
             />
+
+            <button onClick={handleCreateOrder}>Создать заказ для пользователя</button>
 
             {filteredOrders.length === 0 ? (
                 <p>У пользователя нет заказов.</p>

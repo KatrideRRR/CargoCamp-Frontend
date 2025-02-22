@@ -9,8 +9,8 @@ import MessagesPage from "./pages/MessagesPage";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
 import UserComplaintsPage from "./pages/UserComplaintsPage";
 import UserOrdersPage from "./pages/UserOrdersPage";
-import AdminCreateOrderPage from "./pages/AdminCreateOrderPage";
 import CreateUserPage from "./pages/CreateUserPage";
+import AdminCreateOrderPage from './pages/AdminCreateOrderPage';
 
 function App() {
   return (
@@ -26,6 +26,7 @@ function App() {
               <Route path="/users/:userId/complaints" element={<PrivateRoute><UserComplaintsPage /></PrivateRoute>} />
               <Route path="/users/:userId/orders" element={<PrivateRoute><UserOrdersPage /></PrivateRoute>} />
               <Route path="/create" element={<PrivateRoute><AdminCreateOrderPage /></PrivateRoute>} />
+              <Route path="/create-order/:userId" element={<PrivateRoute><AdminCreateOrderPage /></PrivateRoute>} />
           </Routes>
       </Router>
   );

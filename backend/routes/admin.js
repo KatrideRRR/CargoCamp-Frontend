@@ -11,6 +11,48 @@ const geocoder = NodeGeocoder({
 
 const router = express.Router();
 
+// Add a new order as admin
+router.post('/create-order', authMiddleware,  async (req, res) => {
+    const { address, description, workTime, proposedSum, type, categoryId, subcategoryId, userId } = req.body;
+
+    try {
+        if (!address || !userId) {
+            return res.status(400).json({ message: 'Адрес и ID пользователя обязательны' });
+        }
+
+        // Получаем координаты из геокодера
+        const geoData = await geocoder.geocode(address);
+        if (!geoData.length) {
+            return res.status(404).json({ message: 'Адрес не найден' });
+        }
+
+        const { latitude, longitude } = geoData[0];
+        const coordinates = `${latitude},${longitude}`;
+
+
+        const newOrder = await Order.create({
+            userId, // Создаём заказ от указанного пользователя
+            address,
+            description,
+            workTime,
+            proposedSum,
+            coordinates,
+            type,
+            createdAt: new Date().toISOString(),
+            creatorId: userId, // ID админа, создавшего заказ
+            status: 'pending',
+            categoryId,
+            subcategoryId,
+        });
+
+
+        res.status(201).json(newOrder);
+    } catch (error) {
+        console.error('Ошибка при создании заказа админом:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 // Админский маршрут для создания пользователя
 router.post('/create-user', authMiddleware, adminMiddleware, async (req, res) => {
     const { username, phone, password } = req.body;

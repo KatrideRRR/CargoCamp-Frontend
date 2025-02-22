@@ -1,108 +1,297 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "../styles/AdminCreateOrderPage.css"; // Подключаем стили
+import {useNavigate, useParams} from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import '../styles/AdminCreateOrderPage.css';
 
 function AdminCreateOrderPage() {
-    const [userId, setUserId] = useState("");
-    const [address, setAddress] = useState("");
-    const [description, setDescription] = useState("");
-    const [workTime, setWorkTime] = useState("");
-    const [proposedSum, setProposedSum] = useState("");
-    const [type, setType] = useState("");
-    const [categoryId, setCategoryId] = useState("");
-    const [subcategoryId, setSubcategoryId] = useState("");
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+    const { userId } = useParams(); // Получаем ID пользователя из URL
+    const [formData, setFormData] = useState({
+        userId: userId,  // Инициализируем userId
+        description: "",
+        address: "",
+        workTime: null,
+        proposedSum: "",
+        type: "",
+    });
+
+    const [markerPosition, setMarkerPosition] = useState(null);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
-    const token = localStorage.getItem("authToken");
+    const [category, setCategory] = useState([]);
+    const [subcategory, setSubcategory] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSubcategory, setSelectedSubcategory] = useState('');
+    const [addressSuggestions, setAddressSuggestions] = useState([]); // Подсказки для адреса
 
-    const handleCreateOrder = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setSuccess(null);
-
-        const orderData = {
-            userId: Number(userId),
-            address,
-            description,
-            workTime,
-            proposedSum: Number(proposedSum),
-            type,
-            categoryId: Number(categoryId),
-            subcategoryId: Number(subcategoryId),
-
-        };
-
-        try {
-            console.log("Отправляем данные:", {
-                userId, address, description, workTime, proposedSum, type, categoryId, subcategoryId
+    useEffect(() => {
+        // Получение списка категорий при загрузке компонента
+        axios.get('http://localhost:5000/api/category')
+            .then(response => {
+                setCategory(response.data);
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке категорий', error);
             });
+    }, []);
 
-            if (!userId || !address) {
-                setError("ID пользователя и адрес обязательны!");
-                return;
-            }
+    const handleCategoryChange = (event) => {
+        const categoryId = event.target.value;
+        setSelectedCategory(categoryId);
 
-            const response = await axios.post("http://localhost:5000/api/admin/create", orderData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+        // Получение подкатегорий для выбранной категории
+        axios.get(`http://localhost:5000/api/category/subcategory/${categoryId}`)
+            .then(response => {
+                setSubcategory(response.data);
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке подкатегорий', error);
             });
+    };
 
-
-            setSuccess("Заказ успешно создан!");
-            setUserId("");
-            setAddress("");
-            setDescription("");
-            setWorkTime("");
-            setProposedSum("");
-            setType("");
-            setCategoryId("");
-            setSubcategoryId("");
-
-            setTimeout(() => navigate("/orders"), 2000);
-        } catch (error) {
-            console.error("Ошибка при создании заказа", error);
-            setError(error.response?.data?.message || "Ошибка сервера");
+    const getMinTime = (selectedDate) => {
+        const currentDate = new Date(); // Текущая дата
+        if (!selectedDate || selectedDate.toDateString() === currentDate.toDateString()) {
+            // Если дата совпадает с сегодняшней или не выбрана, минимальное время — текущее время
+            return new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate(),
+                currentDate.getHours(),
+                currentDate.getMinutes()
+            );
+        } else {
+            // Для других дат минимальное время — начало суток
+            return new Date(0, 0, 0, 0, 0, 0);
         }
     };
 
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+
+        const orderData = {
+            userId: userId, // Передаем userId для создания заказа
+            categoryId: selectedCategory,
+            subcategoryId: selectedSubcategory,
+            description: formData.description,
+            address: formData.address,
+            workTime: formData.workTime ? formData.workTime.toISOString() : null, // Преобразуем в ISO-строку, если нужно
+            proposedSum: formData.proposedSum,
+            type: formData.type,
+            coordinates: markerPosition ? markerPosition.join(",") : null, // Если есть координаты
+        };
+
+// Отправка запроса с данными в формате JSON
+        try {
+            const token = localStorage.getItem("authToken");
+
+            await axios.post(`http://localhost:5000/api/admin/create-order`, orderData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json', // Указываем тип контента как JSON
+                },
+            });
+            alert("Заказ успешно создан");
+            navigate("/orders");
+        } catch (err) {
+            console.error("Ошибка при создании заказа:", err);
+            setError("Не удалось создать заказ. Попробуйте снова.");
+        }
+
+    };
+
+    const handleTypeInputChange = (value) => {
+        setFormData({ ...formData, type: value });
+    };
+
+    const handleAddressChange = async (e) => {
+        const address = e.target.value;
+        setFormData({ ...formData, address });
+
+        // Если вводим хотя бы 3 символа, начинаем запрашивать подсказки
+        if (address.length > 3) {
+            try {
+                const response = await fetch(
+                    `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(
+                        address
+                    )}&format=json`
+                );
+                const data = await response.json();
+                const suggestions = data.response.GeoObjectCollection.featureMember.map(item => item.GeoObject.name);
+                setAddressSuggestions(suggestions);
+            } catch (err) {
+                console.error("Ошибка геокодирования:", err);
+                setAddressSuggestions([]);
+            }
+        } else {
+            setAddressSuggestions([]);
+        }
+    };
+
+    const handleAddressSelect = async (address) => {
+        setFormData({ ...formData, address });
+        setAddressSuggestions([]); // Закрываем список подсказок
+
+        // Запрос координат для выбранного адреса
+        try {
+            const response = await fetch(
+                `https://geocode-maps.yandex.ru/1.x/?apikey=bf97867b-5ffb-4fc4-9fd5-8997874b300e&geocode=${encodeURIComponent(address)}&format=json`
+            );
+            const data = await response.json();
+            const coordinates = data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ');
+            const [longitude, latitude] = coordinates.map(coord => parseFloat(coord));
+            setMarkerPosition([latitude, longitude]); // Обновляем позицию маркера
+        } catch (err) {
+            console.error("Ошибка получения координат:", err);
+        }
+    };
+    const handleDescriptionChange = (e) => {
+        const textarea = e.target;
+        textarea.style.height = "auto"; // Сброс высоты
+        textarea.style.height = `${textarea.scrollHeight}px`; // Установка высоты на основе контента
+        setFormData({ ...formData, description: textarea.value });
+    };
+
+
+
     return (
-        <div className="create-order-container">
-            <h1>Создать заказ</h1>
+            <div className="create-order-page">
+                <div className="form-container">
+                    {error && <p className="error-text">{error}</p>}
+                    <form onSubmit={handleSubmit} className="form">
+                        <div className="input-group">
+                            <div>
+                                <label>Выберите категорию:</label>
+                                <select value={selectedCategory} onChange={handleCategoryChange}>
+                                    <option value="">Выберите категорию</option>
+                                    {category.map(category => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-            {error && <p className="error-message">{error}</p>}
-            {success && <p className="success-message">{success}</p>}
+                            <div>
+                                <label>Выберите подкатегорию:</label>
+                                <select
+                                    value={selectedSubcategory}
+                                    onChange={e => setSelectedSubcategory(e.target.value)}
+                                    disabled={!selectedCategory}
+                                >
+                                    <option value="">Выберите подкатегорию</option>
+                                    {subcategory.map(subcategory => (
+                                        <option key={subcategory.id} value={subcategory.id}>
+                                            {subcategory.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <label className="label">Ключевое слово</label>
+                            <input
+                                className="input"
+                                type="text"
+                                value={formData.type}
+                                onChange={(e) => handleTypeInputChange(e.target.value)}
+                                placeholder="Введите ключевое слово..."
+                                required
+                            />
 
-            <form onSubmit={handleCreateOrder} encType="multipart/form-data">
-                <label>ID пользователя:</label>
-                <input type="number" value={userId} onChange={(e) => setUserId(e.target.value)} required />
+                        </div>
 
-                <label>Адрес:</label>
-                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                        <div className="input-group">
+                            <label className="label">Описание работы</label>
+                            <textarea
+                                className="textarea"
+                                placeholder="Введите описание работы"
+                                value={formData.description}
+                                onChange={handleDescriptionChange}
+                                rows="3" // Начальная высота
+                            />
+                        </div>
 
-                <label>Описание:</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+                        <div className="input-group">
+                            <label className="label">Адрес</label>
+                            <input
+                                className="input"
+                                type="text"
+                                placeholder="Введите адрес"
+                                value={formData.address}
+                                onChange={handleAddressChange}
+                                required
+                            />
+                            {addressSuggestions.length > 0 && (
+                                <ul className="address-suggestions">
+                                    {addressSuggestions.map((address, index) => (
+                                        <li key={index} onClick={() => handleAddressSelect(address)}>
+                                            {address}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
 
-                <label>Время работы:</label>
-                <input type="text" value={workTime} onChange={(e) => setWorkTime(e.target.value)} required />
+                        </div>
 
-                <label>Предложенная сумма:</label>
-                <input type="number" value={proposedSum} onChange={(e) => setProposedSum(e.target.value)} required />
+                        <div className="input-row">
+                            <div className="input-group date-picker">
+                                <label className="label">Дата и время</label>
+                                <DatePicker
+                                    selected={formData.workTime}
+                                    onChange={(date) => setFormData({...formData, workTime: date})}
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="Pp"
+                                    placeholderText="Выберите дату и время"
+                                    minDate={new Date()}
+                                    minTime={getMinTime(formData.workTime)}
+                                    maxTime={new Date(0, 0, 0, 23, 59, 59)}
+                                    className="input"
+                                    portalId="date-picker-portal"
+                                    popperProps={{
+                                        modifiers: [
+                                            {
+                                                name: "preventOverflow",
+                                                options: {
+                                                    boundary: "viewport",
+                                                },
+                                            },
+                                            {
+                                                name: "offset",
+                                                options: {
+                                                    offset: [0, 8],
+                                                },
+                                            },
+                                        ],
+                                    }}
+                                />
 
-                <label>Тип:</label>
-                <input type="text" value={type} onChange={(e) => setType(e.target.value)} required />
 
-                <label>ID категории:</label>
-                <input type="number" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required />
+                            </div>
+                            <div className="input-group">
+                                <label className="label">Предложенная сумма</label>
+                                <input
+                                    className="input"
+                                    type="number"
+                                    placeholder="Введите сумму"
+                                    value={formData.proposedSum}
+                                    onChange={(e) =>
+                                        setFormData({...formData, proposedSum: e.target.value})
+                                    }
+                                    required
+                                />
+                            </div>
+                        </div>
 
-                <label>ID подкатегории:</label>
-                <input type="number" value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)} required />
-
-                <button type="submit">Создать заказ</button>
-            </form>
-        </div>
+                        <button type="submit" className="submit-button">
+                            Создать заказ
+                        </button>
+                    </form>
+                </div>
+            </div>
     );
 }
 
