@@ -11,6 +11,31 @@ const geocoder = NodeGeocoder({
 
 const router = express.Router();
 
+// Админский маршрут для создания пользователя
+router.post('/create-user', authMiddleware, adminMiddleware, async (req, res) => {
+    const { username, phone, password } = req.body;
+
+    if (!phone || !password) {
+        return res.status(400).json({ error: 'Укажите номер телефона и пароль' });
+    }
+
+    try {
+        const userExists = await User.findOne({ where: { phone } });
+        if (userExists) {
+            return res.status(400).json({ message: 'Телефон уже используется' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({ username, phone, password: hashedPassword });
+
+        const token = jwt.sign({ id: newUser.id, phone: newUser.phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(201).json({ message: 'Пользователь зарегистрирован', token });
+    } catch (error) {
+        console.error('Ошибка при создании пользователя:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 // Получить всех пользователей (только для админов)
 router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
     try {

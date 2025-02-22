@@ -63,6 +63,9 @@ function UsersPage() {
     const handleComplaints = (id) => navigate(`/users/${id}/complaints`);
     const handleOrders = (id) => navigate(`/users/${id}/orders`);
     const handlePhotos = (id) => navigate(`/user-documents/${id}`);
+    const handleClick = () => {
+        navigate("/create-user");
+    };
 
     return (
         <div className="users-container">
@@ -75,6 +78,10 @@ function UsersPage() {
                 value={searchQuery}
                 onChange={handleSearch}
             />
+            <button onClick={handleClick} className="create-user-button">
+                Создать пользователя
+            </button>
+
 
             <table className="users-table">
                 <thead>
@@ -97,14 +104,17 @@ function UsersPage() {
                         <td>{user.rating ? user.rating.toFixed(1) : "—"}</td>
                         <td>
                             <div className="action-buttons">
-                                <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы</button>
+                                <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы
+                                </button>
                                 <button className="orders-button" onClick={() => handleOrders(user.id)}>Заказы</button>
                                 <button className="photos-button" onClick={() => handlePhotos(user.id)}>Фото</button>
 
                                 {user.role === "banned" ? (
-                                    <button className="unblock-button" onClick={() => unblockUser(user.id)}>Разблокировать</button>
+                                    <button className="unblock-button"
+                                            onClick={() => unblockUser(user.id)}>Разблокировать</button>
                                 ) : (
-                                    <button className="block-button" onClick={() => blockUser(user.id)}>Заблокировать</button>
+                                    <button className="block-button"
+                                            onClick={() => blockUser(user.id)}>Заблокировать</button>
                                 )}
                             </div>
                         </td>

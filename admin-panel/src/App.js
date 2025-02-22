@@ -10,11 +10,13 @@ import OrderDetailsPage from "./pages/OrderDetailsPage";
 import UserComplaintsPage from "./pages/UserComplaintsPage";
 import UserOrdersPage from "./pages/UserOrdersPage";
 import AdminCreateOrderPage from "./pages/AdminCreateOrderPage";
+import CreateUserPage from "./pages/CreateUserPage";
 
 function App() {
   return (
       <Router>
           <Routes>
+              <Route path="/create-user" element={<PrivateRoute><CreateUserPage /></PrivateRoute>} />
               <Route path="/" element={<PrivateRoute><LoginPage /></PrivateRoute>} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/users" element={<PrivateRoute><UsersPage /></PrivateRoute>} />
