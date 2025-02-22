@@ -109,15 +109,29 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get('/messages', async (req, res) => {
+router.get("/:orderId/messages", async (req, res) => {
     try {
-        const messages = await Message.findAll(); // Заменить Message на свою модель
+        const { orderId } = req.params;
+        // Получаем все сообщения для этого заказа
+        const messages = await Message.findAll({
+            where: { orderId },
+            order: [['createdAt', 'ASC']], // Сортировка по времени создания
+            include: [
+                {
+                    model: User,
+                    as: 'sender',
+                    attributes: ['username']
+                }
+            ]
+        });
+
         res.json(messages);
     } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error("Ошибка получения сообщений:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
 
 // Детали заказа
 router.get('/orders/:id', async (req, res) => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 import '../styles/OrderDetailsPage.css';
 
@@ -8,6 +8,10 @@ function OrderDetailsPage() {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [filteredOrders, setFilteredOrders] = useState([]);
+    const token = localStorage.getItem("authToken");
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get(`http://localhost:5000/api/admin/orders/${id}`)
@@ -20,6 +24,24 @@ function OrderDetailsPage() {
                 setLoading(false);
             });
     }, [id]);
+
+    const deleteOrder = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/admin/orders/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setOrders(orders.filter(order => order.id !== id));
+            setFilteredOrders(filteredOrders.filter(order => order.id !== id));
+            navigate("/orders");
+        } catch (error) {
+            console.error("Ошибка удаления заказа", error);
+            alert("Не удалось удалить заказ");
+        }
+    };
+
+    const showMessage = async (id) => {
+        navigate(`/${id}/messages`);
+    }
 
     if (loading) return <p>Загрузка...</p>;
     if (error) return <p>{error}</p>;
@@ -42,6 +64,12 @@ function OrderDetailsPage() {
                 <p><strong>Описание:</strong> {order.description}</p>
                 <p><strong>Цена:</strong> {order.proposedSum}</p>
                 <p><strong>Id исполнителя:</strong> {order.executorId}</p>
+                <button className="message-button" onClick={() => showMessage(order.id)}>
+                    Открыть чат
+                </button>
+                <button className="delete-button" onClick={() => deleteOrder(order.id)}>
+                    Удалить
+                </button>
             </div>
         </div>
 

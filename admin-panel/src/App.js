@@ -19,7 +19,7 @@ function App() {
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/users" element={<PrivateRoute><UsersPage /></PrivateRoute>} />
               <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
-              <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+              <Route path="/:orderId/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
               <Route path="/orders/:id" element={<PrivateRoute><OrderDetailsPage /></PrivateRoute>} />
               <Route path="/users/:userId/complaints" element={<PrivateRoute><UserComplaintsPage /></PrivateRoute>} />
               <Route path="/users/:userId/orders" element={<PrivateRoute><UserOrdersPage /></PrivateRoute>} />
