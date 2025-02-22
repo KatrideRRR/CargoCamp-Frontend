@@ -160,7 +160,7 @@ const MyOrdersPage = () => {
                                             <ul>
                                                 {order.requestedExecutors.map((executor) => (
                                                     <li key={executor.id}>
-                                                        {executor.username} {executor.id} (Рейтинг: {executor.rating || 'Нет'} ⭐,
+                                                        {executor.username} {executor.id} (Рейтинг: {executor.rating ? executor.rating.toFixed(1) : "—"} ⭐,
                                                         Оценок: {executor.ratingCount || 0})
                                                         <button
                                                             onClick={() => navigate(`/complaints/${executor.id}`)}

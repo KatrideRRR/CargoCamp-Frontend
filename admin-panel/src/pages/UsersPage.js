@@ -94,7 +94,7 @@ function UsersPage() {
                         <td>{user.username}</td>
                         <td>{user.phone}</td>
                         <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                        <td>{user.rating}</td>
+                        <td>{user.rating ? user.rating.toFixed(1) : "—"}</td>
                         <td>
                             <div className="action-buttons">
                                 <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы</button>
