@@ -53,7 +53,7 @@ module.exports = (sequelize) => {
                 defaultValue: []
             },
             role: {
-                type: DataTypes.ENUM('user', 'admin'),
+                type: DataTypes.ENUM('user', 'admin', 'banned'),
                 defaultValue: 'user' // по умолчанию обычный пользователь
             }
 

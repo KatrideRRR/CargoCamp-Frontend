@@ -21,6 +21,12 @@ const LoginPage = () => {
             localStorage.setItem('authToken', token);
             login(token); // Сохраняем новый токен
             setCurrentUser(user);
+            if (response.data.user.role === "banned") {
+                setError("Ваш аккаунт заблокирован.");
+                localStorage.removeItem("authToken"); // Удаляем токен, чтобы не заходил
+                return;
+            }
+
             navigate('/profile');
         } catch (err) {
             console.error(err);

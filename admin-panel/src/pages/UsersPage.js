@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/UsersPage.css"; // Импорт стилей
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function UsersPage() {
     const [users, setUsers] = useState([]);
@@ -21,12 +21,30 @@ function UsersPage() {
             .catch((error) => console.error("Ошибка загрузки пользователей", error));
     }, [token]);
 
+    // Функция блокировки пользователя
     const blockUser = async (id) => {
-        await axios.put(`http://localhost:5000/api/admin/users/${id}/block`, {}, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setUsers(users.map(user => user.id === id ? { ...user, role: "banned" } : user));
-        setFilteredUsers(filteredUsers.map(user => user.id === id ? { ...user, role: "banned" } : user));
+        try {
+            await axios.put(`http://localhost:5000/api/admin/users/${id}/block`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUsers(users.map(user => user.id === id ? { ...user, role: "banned" } : user));
+            setFilteredUsers(filteredUsers.map(user => user.id === id ? { ...user, role: "banned" } : user));
+        } catch (error) {
+            console.error("Ошибка блокировки", error);
+        }
+    };
+
+    // Функция разблокировки пользователя
+    const unblockUser = async (id) => {
+        try {
+            await axios.put(`http://localhost:5000/api/admin/users/${id}/unblock`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUsers(users.map(user => user.id === id ? { ...user, role: "user" } : user));
+            setFilteredUsers(filteredUsers.map(user => user.id === id ? { ...user, role: "user" } : user));
+        } catch (error) {
+            console.error("Ошибка разблокировки", error);
+        }
     };
 
     const handleSearch = (e) => {
@@ -42,15 +60,9 @@ function UsersPage() {
         }
     };
 
-    const handleComplaints = (id) => {
-            navigate(`/users/${id}/complaints`);
-    };
-    const handleOrders = (id) => {
-        navigate(`/users/${id}/orders`);
-    };
-    const handlePhotos = (id) => {
-        navigate(`/user-documents/${id}`);
-    };
+    const handleComplaints = (id) => navigate(`/users/${id}/complaints`);
+    const handleOrders = (id) => navigate(`/users/${id}/orders`);
+    const handlePhotos = (id) => navigate(`/user-documents/${id}`);
 
     return (
         <div className="users-container">
@@ -88,7 +100,10 @@ function UsersPage() {
                                 <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы</button>
                                 <button className="orders-button" onClick={() => handleOrders(user.id)}>Заказы</button>
                                 <button className="photos-button" onClick={() => handlePhotos(user.id)}>Фото</button>
-                                {user.role !== "banned" && (
+
+                                {user.role === "banned" ? (
+                                    <button className="unblock-button" onClick={() => unblockUser(user.id)}>Разблокировать</button>
+                                ) : (
                                     <button className="block-button" onClick={() => blockUser(user.id)}>Заблокировать</button>
                                 )}
                             </div>

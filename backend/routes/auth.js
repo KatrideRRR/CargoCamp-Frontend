@@ -97,6 +97,10 @@ router.post('/login', async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid password' });
         }
+        if (user.role === 'banned') {
+            return res.status(403).json({ message: 'Ваш аккаунт заблокирован' });
+        }
+
 
         const token = jwt.sign({ id: user.id, phone: user.phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.json({ token, user: { id: user.id, username: user.username, phone: user.phone, rating: user.rating || 5 } });

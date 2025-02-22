@@ -36,6 +36,21 @@ router.put('/users/:id/block', authMiddleware, adminMiddleware, async (req, res)
     }
 });
 
+// Разблокировать пользователя (установить статус "user")
+router.put('/users/:id/unblock', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
+
+        user.role = 'user'; // Меняем статус на обычного пользователя
+        await user.save();
+
+        res.json({ message: 'Пользователь разблокирован', user });
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 // Получить все заказы
 router.get('/orders', authMiddleware, adminMiddleware, async (req, res) => {
     try {
