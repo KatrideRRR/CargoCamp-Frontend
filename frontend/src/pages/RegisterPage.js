@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from "react-google-recaptcha";
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -8,11 +9,17 @@ const RegisterPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const [captchaValue, setCaptchaValue] = useState(null);
+
+    const handleCaptchaChange = (value) => {
+        setCaptchaValue(value);
+    };
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/register', { username, phone, password });
+            const response = await axios.post('http://localhost:5000/api/auth/register', { username, phone, password, captchaToken: captchaValue
+            });
             const { token } = response.data;
             localStorage.setItem('authToken', token); // Сохраняем токен
             alert('Пользователь успешно создан');
@@ -62,7 +69,12 @@ const RegisterPage = () => {
                             style={styles.input}
                         />
                     </div>
-                    <button type="submit" style={styles.button}>Зарегистрироваться</button>
+                    <ReCAPTCHA
+                        sitekey="6LeZUOAqAAAAAO8RbiFwH4WsUXxQgt9TUzeGrghl"
+                        onChange={handleCaptchaChange}
+                    />
+
+                    <button type="submit" disabled={!captchaValue} style={styles.button}>Зарегистрироваться</button>
                 </form>
                 <p style={styles.loginText}>
                     Уже есть аккаунт?{' '}

@@ -6,6 +6,7 @@ const authenticateToken = require('../middlewares/authenticateToken'); // Middle
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const axios = require("axios");
 
 // Настройка хранения файлов (загружаем в папку uploads/)
 const storage = multer.diskStorage({
@@ -61,7 +62,33 @@ router.post('/upload-documents',authenticateToken, upload.array('documents', 5),
 
 // Регистрация пользователя
 router.post('/register', async (req, res) => {
-    const { username, phone, password } = req.body;
+    const { username, phone, password, captchaToken } = req.body;
+
+    if (!captchaToken) {
+        return res.status(400).json({ error: "Капча не пройдена" });
+    }
+
+    try {
+        const response = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify`,
+            null,
+            {
+                params: {
+                    secret: "6LeZUOAqAAAAABZ3mEk5a2-CqfhlU8e7n0-dneDC",
+                    response: captchaToken
+                }
+            }
+        );
+
+        if (!response.data.success) {
+            return res.status(400).json({ error: "Ошибка капчи" });
+        }
+
+    } catch (error) {
+        console.error("Ошибка запроса к Google reCAPTCHA:", error);
+        return res.status(500).json({ error: "Ошибка проверки капчи" });
+    }
+
 
     if (!phone || !password) {
         return res.status(400).json({ error: 'Укажите номер телефона и пароль' });
