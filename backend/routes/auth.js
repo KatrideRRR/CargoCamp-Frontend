@@ -33,6 +33,43 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+const SMSRU_API_KEY = "706A8778-9606-1CA6-F061-72BA6F3A60E3"; // Замените на ваш API-ключ
+
+// Генерация случайного 6-значного кода
+const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// Хранилище кодов в памяти (можно заменить на Redis)
+const smsCodes = new Map();
+
+// Отправка кода подтверждения
+router.post("/send-sms", async (req, res) => {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ message: "Введите номер телефона" });
+
+    const code = generateCode();
+    smsCodes.set(phone, code); // Сохраняем код в памяти
+
+    try {
+        const response = await axios.get("https://sms.ru/sms/send", {
+            params: {
+                api_id: "706A8778-9606-1CA6-F061-72BA6F3A60E3",
+                to: phone,
+                msg: `Ваш код подтверждения: ${code}`,
+                json: 1,
+            },
+        });
+
+        if (response.data.status === "OK") {
+            return res.json({ message: "Код отправлен" });
+        } else {
+            return res.status(500).json({ message: "Ошибка отправки SMS" });
+        }
+    } catch (error) {
+        console.error("Ошибка SMS:", error);
+        return res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 // Маршрут для загрузки изображения
 router.post('/upload-documents',authenticateToken, upload.array('documents', 5), async (req, res) => {
     try {
@@ -62,10 +99,15 @@ router.post('/upload-documents',authenticateToken, upload.array('documents', 5),
 
 // Регистрация пользователя
 router.post('/register', async (req, res) => {
-    const { username, phone, password, captchaToken } = req.body;
+    const { username, phone, password, captchaToken, smsCode } = req.body;
+
 
     if (!captchaToken) {
         return res.status(400).json({ error: "Капча не пройдена" });
+    }
+
+    if (!smsCodes.has(phone) || smsCodes.get(phone) !== smsCode) {
+        return res.status(400).json({ message: "Неверный код" });
     }
 
     try {
@@ -89,10 +131,29 @@ router.post('/register', async (req, res) => {
         return res.status(500).json({ error: "Ошибка проверки капчи" });
     }
 
+    try {
+        const userExists = await User.findOne({ where: { phone } });
+        if (userExists) return res.status(400).json({ message: "Телефон уже используется" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({ username, phone, password: hashedPassword, verified: true });
+
+        smsCodes.delete(phone); // Удаляем код после успешной регистрации
+
+        const token = jwt.sign({ id: newUser.id, phone: newUser.phone }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        return res.status(201).json({ message: "Пользователь зарегистрирован", token });
+    } catch (error) {
+        console.error("Ошибка регистрации:", error);
+        return res.status(500).json({ message: "Ошибка сервера" });
+    }
+
+
 
     if (!phone || !password) {
         return res.status(400).json({ error: 'Укажите номер телефона и пароль' });
     }
+
+    console.log("API-ключ SMS.RU:", SMSRU_API_KEY);
 
     try {
         const userExists = await User.findOne({ where: { phone } });

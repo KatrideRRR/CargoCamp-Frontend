@@ -10,15 +10,27 @@ const RegisterPage = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [captchaValue, setCaptchaValue] = useState(null);
+    const [smsCode, setSmsCode] = useState("");
+    const [isSmsSent, setIsSmsSent] = useState(false);
 
     const handleCaptchaChange = (value) => {
         setCaptchaValue(value);
+    };
+    // Отправка SMS-кода
+    const sendSmsCode = async () => {
+        try {
+            await axios.post("http://localhost:5000/api/auth/send-sms", { phone });
+            setIsSmsSent(true);
+            alert("Код подтверждения отправлен на ваш номер");
+        } catch (err) {
+            setError("Ошибка отправки SMS");
+        }
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/register', { username, phone, password, captchaToken: captchaValue
+            const response = await axios.post('http://localhost:5000/api/auth/register', { username, phone, password, smsCode, captchaToken: captchaValue
             });
             const { token } = response.data;
             localStorage.setItem('authToken', token); // Сохраняем токен
@@ -73,8 +85,15 @@ const RegisterPage = () => {
                         sitekey="6LeZUOAqAAAAAO8RbiFwH4WsUXxQgt9TUzeGrghl"
                         onChange={handleCaptchaChange}
                     />
+                    {!isSmsSent ? (
+                        <button type="button" onClick={sendSmsCode} disabled={!captchaValue}>Получить код</button>
+                    ) : (
+                        <>
+                        <input type="text" placeholder="Код из SMS" value={smsCode} onChange={(e) => setSmsCode(e.target.value)} required />
 
                     <button type="submit" disabled={!captchaValue} style={styles.button}>Зарегистрироваться</button>
+                        </>
+                    )}
                 </form>
                 <p style={styles.loginText}>
                     Уже есть аккаунт?{' '}
