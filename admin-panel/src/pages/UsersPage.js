@@ -114,6 +114,19 @@ function UsersPage() {
             ));
         }
     };
+    // Функция для обновления статуса верификации
+    const toggleVerification = async (id, currentStatus) => {
+        try {
+            const newStatus = !currentStatus; // Меняем на противоположное значение
+            await axios.put(`http://localhost:5000/api/admin/users/${id}/verify`, { isVerified: newStatus }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUsers(users.map(user => user.id === id ? { ...user, isVerified: newStatus } : user));
+            setFilteredUsers(filteredUsers.map(user => user.id === id ? { ...user, isVerified: newStatus } : user));
+        } catch (error) {
+            console.error("Ошибка обновления верификации", error);
+        }
+    };
 
     const handleComplaints = (id) => navigate(`/users/${id}/complaints`);
     const handleOrders = (id) => navigate(`/users/${id}/orders`);
@@ -144,6 +157,7 @@ function UsersPage() {
                     <th>Телефон</th>
                     <th>Дата регистрации</th>
                     <th>Рейтинг</th>
+                    <th>Верифицирован</th>
                     <th>Действия</th>
                 </tr>
                 </thead>
@@ -155,6 +169,15 @@ function UsersPage() {
                         <td>{user.phone}</td>
                         <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td>{user.rating ? user.rating.toFixed(1) : "—"}</td>
+                        <td>
+                            <button
+                                className={`verify-button ${user.isVerified ? 'verified' : 'not-verified'}`}
+                                onClick={() => toggleVerification(user.id, user.isVerified)}
+                            >
+                                {user.isVerified ? 'Верифицирован' : 'Не верифицирован'}
+                            </button>
+                        </td>
+
                         <td>
                             <div className="action-buttons">
                                 <button

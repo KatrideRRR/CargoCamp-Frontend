@@ -11,6 +11,34 @@ const geocoder = NodeGeocoder({
 
 const router = express.Router();
 
+// PUT запрос для верификации пользователя
+router.put('/users/:id/verify', async (req, res) => {
+    const { id } = req.params; // Получаем id пользователя из параметров URL
+    const { isVerified } = req.body; // Получаем новый статус верификации
+
+    try {
+        // Ищем пользователя по ID
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // Обновляем поле isVerified
+        user.isVerified = isVerified;
+
+        // Сохраняем изменения в базе
+        await user.save();
+
+        // Отправляем успешный ответ
+        res.status(200).json({ message: `Статус верификации пользователя ${id} обновлен`, user });
+    } catch (error) {
+        console.error('Ошибка при обновлении верификации', error);
+        res.status(500).json({ message: 'Ошибка на сервере' });
+    }
+});
+
+
 // Получение документов пользователя (только для админов)
 router.get('/user-documents/:userId', authMiddleware, adminMiddleware, async (req, res) => {
     try {

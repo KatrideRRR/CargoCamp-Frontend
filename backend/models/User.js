@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+const Sequelize = require('sequelize'); // Добавляем импорт Sequelize
 
 module.exports = (sequelize) => {
     class User extends Model {
@@ -55,7 +56,11 @@ module.exports = (sequelize) => {
             role: {
                 type: DataTypes.ENUM('user', 'admin', 'banned'),
                 defaultValue: 'user' // по умолчанию обычный пользователь
-            }
+            },
+            isVerified: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
 
         },
         {
