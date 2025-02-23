@@ -12,6 +12,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const { setCurrentUser } = useUser(); // Извлечение setCurrentUser из контекста
+    const [message, setMessage] = useState("");
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -33,6 +34,16 @@ const LoginPage = () => {
             setError(err.response?.data?.message || 'Ошибка авторизации');
         }
     };
+    // Восстановление пароля через SMS
+    const handleRecoverPassword = async () => {
+        try {
+            const response = await axios.post("http://localhost:5000/api/auth/recover-password", { phone });
+            setMessage(response.data.message);
+        } catch (err) {
+            setError(err.response?.data?.message || "Ошибка восстановления пароля");
+        }
+    };
+
 
     return (
         <div className="container">
@@ -72,6 +83,8 @@ const LoginPage = () => {
                     >
                         Зарегистрироваться
                     </span>
+                    <button onClick={handleRecoverPassword} >Забыли пароль?</button>
+
                 </p>
             </div>
         </div>

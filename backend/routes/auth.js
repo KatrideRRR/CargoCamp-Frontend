@@ -35,6 +35,11 @@ const upload = multer({ storage });
 
 const SMSRU_API_KEY = "706A8778-9606-1CA6-F061-72BA6F3A60E3"; // Замените на ваш API-ключ
 
+// Функция для генерации нового пароля
+const generateTemporaryPassword = () => {
+    return Math.random().toString(36).slice(-8); // Генерируем случайный 8-значный пароль
+};
+
 // Генерация случайного 6-значного кода
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -290,5 +295,48 @@ router.post("/rate", authenticateToken,async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
+// Восстановление пароля через SMS
+router.post("/recover-password", async (req, res) => {
+    const { phone } = req.body;
+
+    if (!phone) {
+        return res.status(400).json({ message: "Введите номер телефона" });
+    }
+
+    try {
+        const user = await User.findOne({ where: { phone } });
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+
+        // Генерируем временный пароль
+        const tempPassword = generateTemporaryPassword();
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        // Обновляем пароль в базе данных
+        await user.update({ password: hashedPassword });
+
+        // Отправляем новый пароль через SMS
+        const response = await axios.get("https://sms.ru/sms/send", {
+            params: {
+                api_id: "706A8778-9606-1CA6-F061-72BA6F3A60E3",
+                to: phone,
+                msg: `Ваш новый пароль: ${tempPassword}`, // Отправляем временный пароль
+                json: 1,
+            },
+        });
+
+        if (response.data.status === "OK") {
+            return res.json({ message: "Новый пароль отправлен на ваш номер" });
+        } else {
+            return res.status(500).json({ message: "Ошибка отправки SMS" });
+        }
+    } catch (error) {
+        console.error("Ошибка восстановления пароля:", error);
+        return res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 
 module.exports = router;
