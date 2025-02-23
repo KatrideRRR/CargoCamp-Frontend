@@ -11,6 +11,26 @@ const geocoder = NodeGeocoder({
 
 const router = express.Router();
 
+// Получение документов пользователя (только для админов)
+router.get('/user-documents/:userId', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const user = await User.findByPk(userId, {
+            attributes: ['id', 'documentPhotos'],
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        res.status(200).json({ documents: user.documentPhotos || [] });
+    } catch (error) {
+        console.error('Ошибка при получении документов пользователя:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 // Add a new order as admin
 router.post('/create-order', authMiddleware,  async (req, res) => {
     const { address, description, workTime, proposedSum, type, categoryId, subcategoryId, userId } = req.body;

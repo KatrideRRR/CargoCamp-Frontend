@@ -63,9 +63,7 @@ function UsersPage() {
     const handleComplaints = (id) => navigate(`/users/${id}/complaints`);
     const handleOrders = (id) => navigate(`/users/${id}/orders`);
     const handlePhotos = (id) => navigate(`/user-documents/${id}`);
-    const handleClick = () => {
-        navigate("/create-user");
-    };
+    const handleClick = () => {navigate("/create-user");};
 
     return (
         <div className="users-container">

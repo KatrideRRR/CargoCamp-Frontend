@@ -10,7 +10,6 @@ function Dashboard() {
                 <ul>
                     <li><Link to="/users">Пользователи</Link></li>
                     <li><Link to="/orders">Заказы</Link></li>
-                    <li><Link to="/create">Создать заказ</Link></li>
                 </ul>
             </nav>
         </div>

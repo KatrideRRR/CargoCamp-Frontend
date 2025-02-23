@@ -11,7 +11,7 @@ import UserComplaintsPage from "./pages/UserComplaintsPage";
 import UserOrdersPage from "./pages/UserOrdersPage";
 import CreateUserPage from "./pages/CreateUserPage";
 import AdminCreateOrderPage from './pages/AdminCreateOrderPage';
-
+import AdminUserDocumentsPage from "./pages/AdminUserDocumentsPage";
 function App() {
   return (
       <Router>
@@ -27,6 +27,7 @@ function App() {
               <Route path="/users/:userId/orders" element={<PrivateRoute><UserOrdersPage /></PrivateRoute>} />
               <Route path="/create" element={<PrivateRoute><AdminCreateOrderPage /></PrivateRoute>} />
               <Route path="/create-order/:userId" element={<PrivateRoute><AdminCreateOrderPage /></PrivateRoute>} />
+              <Route path="/user-documents/:userId" element={<PrivateRoute><AdminUserDocumentsPage /></PrivateRoute>} />
           </Routes>
       </Router>
   );

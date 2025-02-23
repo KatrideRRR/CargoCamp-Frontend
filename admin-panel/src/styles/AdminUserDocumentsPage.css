@@ -1,0 +1,54 @@
+.admin-user-documents {
+    max-width: 800px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.error-text {
+    color: red;
+    font-weight: bold;
+}
+
+.documents-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.document-item img {
+    width: 200px;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.document-item img:hover {
+    transform: scale(1.05);
+}
+.documents-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.document-item {
+    width: 250px;  /* Размер блока */
+    height: 350px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.document-item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Сохранение пропорций */
+}
