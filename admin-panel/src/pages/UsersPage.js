@@ -9,6 +9,9 @@ function UsersPage() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const token = localStorage.getItem("authToken");
     const navigate = useNavigate();
+    const [documentsCount, setDocumentsCount] = useState({});
+    const [complaintsCount, setComplaintsCount] = useState({});
+    const [ordersCount, setOrdersCount] = useState({});
 
     useEffect(() => {
         axios.get("http://localhost:5000/api/admin/users", {
@@ -20,6 +23,58 @@ function UsersPage() {
             })
             .catch((error) => console.error("Ошибка загрузки пользователей", error));
     }, [token]);
+    // Запрос количества документов, жалоб и заказов
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const docCounts = {};
+            const complaintCounts = {};
+            const orderCounts = {};
+
+            for (const user of users) {
+                try {
+                    // Документы
+                    const docResponse = await axios.get(`http://localhost:5000/api/admin/user-documents/${user.id}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    docCounts[user.id] = docResponse.data.documents.length;
+                } catch (error) {
+                    console.error(`Ошибка загрузки документов пользователя ${user.id}`, error);
+                    docCounts[user.id] = 0;
+                }
+
+                try {
+                    // Жалобы
+                    const complaintResponse = await axios.get(`http://localhost:5000/api/admin/users/${user.id}/complaints`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    complaintCounts[user.id] = complaintResponse.data.complaints.length;
+                } catch (error) {
+                    console.error(`Ошибка загрузки жалоб пользователя ${user.id}`, error);
+                    complaintCounts[user.id] = 0;
+                }
+
+                try {
+                    // Заказы
+                    const orderResponse = await axios.get(`http://localhost:5000/api/admin/users/${user.id}/orders`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    orderCounts[user.id] = orderResponse.data.orders.length;
+                } catch (error) {
+                    console.error(`Ошибка загрузки заказов пользователя ${user.id}`, error);
+                    orderCounts[user.id] = 0;
+                }
+            }
+
+            setDocumentsCount(docCounts);
+            setComplaintsCount(complaintCounts);
+            setOrdersCount(orderCounts);
+        };
+
+        if (users.length > 0) {
+            fetchUserData();
+        }
+    }, [users, token]);
+
 
     // Функция блокировки пользователя
     const blockUser = async (id) => {
@@ -102,10 +157,32 @@ function UsersPage() {
                         <td>{user.rating ? user.rating.toFixed(1) : "—"}</td>
                         <td>
                             <div className="action-buttons">
-                                <button className="complaints-button" onClick={() => handleComplaints(user.id)}>Жалобы
+                                <button
+                                    className="complaints-button"
+                                    onClick={() => handleComplaints(user.id)}
+                                    disabled={!complaintsCount[user.id]}
+                                    style={{backgroundColor: !complaintsCount[user.id] ? "gray" : "blue"}}
+                                >
+                                    Жалобы ({complaintsCount[user.id] || 0})
                                 </button>
-                                <button className="orders-button" onClick={() => handleOrders(user.id)}>Заказы</button>
-                                <button className="photos-button" onClick={() => handlePhotos(user.id)}>Фото</button>
+
+                                <button
+                                    className="orders-button"
+                                    onClick={() => handleOrders(user.id)}
+                                    style={{backgroundColor: !ordersCount[user.id] ? "green" : "blue"}}
+                                >
+                                    Заказы ({ordersCount[user.id] || 0})
+                                </button>
+
+                                <button
+                                    className="photos-button"
+                                    onClick={() => handlePhotos(user.id)}
+                                    disabled={!documentsCount[user.id]}
+                                    style={{backgroundColor: !documentsCount[user.id] ? "gray" : "blue"}}
+                                >
+                                    Фото ({documentsCount[user.id] || 0})
+                                </button>
+
 
                                 {user.role === "banned" ? (
                                     <button className="unblock-button"
