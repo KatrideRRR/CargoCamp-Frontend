@@ -1,9 +1,10 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, PlusCircle, List } from 'lucide-react';
+import { ClipboardList, List, BellRing, Briefcase } from 'lucide-react';
 import '../styles/BottomMenu.css';
 import io from 'socket.io-client';
-import {AuthContext} from "../utils/authContext";
+import { AuthContext } from "../utils/authContext";
+
 const socket = io('http://localhost:5000');
 
 const BottomMenu = () => {
@@ -12,21 +13,28 @@ const BottomMenu = () => {
     const { user } = useContext(AuthContext);
 
     useEffect(() => {
-        socket.connect(); // Подключаем WebSocket
+        socket.connect();
 
-        socket.on("orderRequest", (data) => {
-            console.log("🔥 Получен запрос на заказ:", data);
-            setHasNewRequests(true);
-        });
+        if (user?.id) {
+            const eventName = `orderRequest:${user.id}`;
+            console.log(`🔍 Подписка на WebSocket-событие: ${eventName}`);
 
-        return () => {
-            socket.off("orderRequest");
-        };
-    }, []);
+            socket.on(eventName, (data) => {
+                console.log("🔥 Получено уведомление о заказе:", data);
+                setHasNewRequests(true);
+            });
+
+            return () => {
+                socket.off(eventName);
+                console.log(`❌ Отписка от события: ${eventName}`);
+            };
+        }
+    }, [user]);
+
 
     const handleMyOrdersClick = () => {
         navigate(`/my-orders/${user.id}`);
-        setHasNewRequests(false); // Сбрасываем флаг после нажатия
+        setHasNewRequests(false); // Сбрасываем уведомление
     };
 
     return (
@@ -37,10 +45,14 @@ const BottomMenu = () => {
             </button>
 
             <button
-                className={`menu-item menu-center ${hasNewRequests ? 'highlight' : ''}`}
+                className={`menu-item menu-center ${hasNewRequests ? 'new-request' : ''}`}
                 onClick={handleMyOrdersClick}
             >
-                <PlusCircle size={28} className="menu-icon-plus" />
+                {hasNewRequests ? (
+                    <BellRing size={28} className="menu-icon-alert" />
+                ) : (
+                    <Briefcase size={28} className="menu-icon-normal" />
+                )}
             </button>
 
             <button className="menu-item menu-right" onClick={() => navigate('/active-orders')}>

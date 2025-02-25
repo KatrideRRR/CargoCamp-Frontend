@@ -12,31 +12,19 @@
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
 }
-.menu-center.highlight {
-    background-color: #ffcc00; /* Желтый цвет, можно изменить */
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 5px rgba(255, 204, 0, 0.6); }
-    50% { box-shadow: 0 0 15px rgba(255, 204, 0, 1); }
-    100% { box-shadow: 0 0 5px rgba(255, 204, 0, 0.6); }
-}
-
 
 .menu-left,
 .menu-right {
-    position: relative;
     display: flex;
     align-items: center;
 }
 
 .menu-left {
-    margin-right: 120px; /* Расстояние от центральной кнопки для левой кнопки */
+    margin-right: 120px;
 }
 
 .menu-right {
-    margin-left: 120px; /* Расстояние от центральной кнопки для правой кнопки */
+    margin-left: 120px;
 }
 
 .menu-item {
@@ -78,6 +66,32 @@
     transform: scale(1.1);
 }
 
+/* Состояние кнопки, когда пришла новая заявка */
+.new-request {
+    background: #ff9800; /* Оранжевый цвет */
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+}
+
+/* Цвет иконки уведомления */
+.menu-icon-alert {
+    color: #ff0000; /* Красный */
+    animation: shake 0.5s infinite alternate;
+}
+
+/* Обычная иконка */
+.menu-icon-normal {
+    color: white;
+}
+
+/* Анимация покачивания для уведомления */
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(5deg); }
+}
+
 @media (max-width: 768px) {
     .bottom-menu {
         height: 60px;
@@ -96,6 +110,6 @@
 
     .menu-item.menu-left,
     .menu-item.menu-right {
-        margin: 50px; /* Убираем фиксированные отступы */
+        margin: 50px;
     }
 }

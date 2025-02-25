@@ -188,55 +188,52 @@ module.exports = (io) => {
         }
     });
 
-    // Get request for order
+// Запрос на выполнение заказа
     router.post("/:id/request", authenticateToken, async (req, res) => {
         const { id } = req.params; // ID заказа
-        const executorId = req.user.id;
+        const executorId = req.user.id; // ID исполнителя
 
         try {
             const order = await Order.findByPk(id);
 
             if (!order) {
+                console.log(`❌ Заказ с ID ${id} не найден.`);
                 return res.status(404).json({ message: "Заказ не найден" });
             }
 
             if (order.status !== "pending") {
+                console.log(`⚠️ Заказ ${id} недоступен (статус: ${order.status}).`);
                 return res.status(400).json({ message: "Заказ недоступен" });
             }
 
-            // Загружаем `requestedExecutors` (инициализируем массив, если пусто)
+            // Загружаем `requestedExecutors`
             let requestedExecutors = [];
             if (order.requestedExecutors) {
                 try {
                     requestedExecutors = JSON.parse(order.requestedExecutors);
-                    if (!Array.isArray(requestedExecutors)) {
-                        requestedExecutors = []; // Если вдруг там не массив, сбрасываем
-                    }
+                    if (!Array.isArray(requestedExecutors)) requestedExecutors = [];
                 } catch (error) {
                     console.error("Ошибка парсинга requestedExecutors:", error);
-                    requestedExecutors = []; // Если ошибка парсинга, делаем новый массив
+                    requestedExecutors = [];
                 }
             }
 
-            // Проверяем, не добавлен ли уже этот исполнитель
+            // Проверяем, не отправлял ли уже этот исполнитель запрос
             if (requestedExecutors.includes(executorId)) {
+                console.log(`🔄 Исполнитель ${executorId} уже запрашивал заказ ${id}.`);
                 return res.status(400).json({ message: "Вы уже отправили запрос на этот заказ" });
             }
 
-            // Добавляем ID исполнителя в массив
+            // Добавляем исполнителя в список запросов
             requestedExecutors.push(executorId);
-
-            // Сохраняем обновленный массив в виде строки JSON
             order.requestedExecutors = JSON.stringify(requestedExecutors);
             await order.save();
 
-            if (order && order.id) {
-                io.emit("orderRequest", { orderId: order.id });
-                console.log("🔥 Сервер отправляет событие с orderId:", order.id);
-            } else {
-                console.error("🔥 Ошибка: order не существует или не имеет id");
-            }
+            // Логируем ID заказчика (userId)
+            console.log(`🔔 Отправляем уведомление заказчику userId=${order.userId} о запросе на заказ ID=${order.id}`);
 
+            // Отправляем уведомление ТОЛЬКО заказчику
+            io.emit(`orderRequest:${order.userId}`, { orderId: order.id });
 
             res.json({ message: "Запрос на выполнение отправлен заказчику", order });
         } catch (error) {
