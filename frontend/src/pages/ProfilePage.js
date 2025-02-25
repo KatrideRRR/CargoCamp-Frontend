@@ -110,6 +110,7 @@ const ProfilePage = () => {
             </div>
         );
     }
+    console.log('isVerified:', profile.isVerified);
 
     return (
         <div className="container">
@@ -129,31 +130,28 @@ const ProfilePage = () => {
                             <p className="info rating">{profile.rating ? renderStars(profile.rating) : 'Нет рейтинга'}</p>
                         </div>
 
+                        {/* Верификация */}
                         <div className="section">
                             <h2 className="subtitle">Верификация:</h2>
-                            <p className="info">
-                                {profile.verified ? 'Пройдена' : 'Не пройдена'}
+                            <p className={`info verification-status ${profile.isVerified ? 'verified' : 'not-verified'}`}>
+                                {profile.isVerified ? 'Пройдена' : 'Не пройдена'}
                             </p>
-                            {!profile.verified && (
-                                <div>
-                                    <button
-                                        onClick={() => {
-                                            const input = document.createElement('input');
-                                            input.type = 'file';
-                                            input.multiple = true;
-
-                                            input.onchange = async (e) => {
-                                                const files = e.target.files;
-                                                await handleUploadDocuments(files);
-                                            };
-
-                                            input.click(); // Открыть диалог выбора файлов
-                                        }}
-                                        className="upload-button" // Здесь добавлен класс
-                                    >
-                                        Выбрать файлы и загрузить
-                                    </button>
-                                </div>
+                            {!profile.isVerified && (
+                                <button
+                                    onClick={() => {
+                                        const input = document.createElement('input');
+                                        input.type = 'file';
+                                        input.multiple = true;
+                                        input.onchange = async (e) => {
+                                            const files = e.target.files;
+                                            await handleUploadDocuments(files);
+                                        };
+                                        input.click();
+                                    }}
+                                    className="upload-button"
+                                >
+                                    Выбрать файлы и загрузить
+                                </button>
                             )}
                         </div>
 

@@ -95,6 +95,27 @@
     background: #1e7e34;
 }
 
+/* Стили для верификации */
+.verification-status {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.verified {
+    color: #fff;
+    background-color: #28a745; /* Зелёный */
+}
+
+.not-verified {
+    color: #fff;
+    background-color: #dc3545; /* Красный */
+}
+
+
 /* Адаптивный дизайн */
 @media (max-width: 480px) {
     .profile-container {
