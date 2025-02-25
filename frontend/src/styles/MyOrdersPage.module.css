@@ -46,16 +46,103 @@
     margin-top: 10px;
 }
 
-.complaintButton {
-    background-color: #f44336;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
+
+.executorCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
 }
 
-.approveButton {
-    background-color: #28a745;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
+.executorInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 10px;
 }
+
+.executorName {
+    font-weight: bold;
+}
+
+.verifiedBadge {
+    display: inline-block;
+    background-color: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.buttonsContainer {
+    display: flex;
+    gap: 10px;
+
+
+    .complaintButton {
+        background-color: #ff9800;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px; /* Скругление */
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Тень */
+    }
+
+    .complaintButton:hover {
+        background-color: #e68900;
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3); /* Увеличение тени при наведении */
+    }
+
+
+    .approveButton {
+        background-color: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px; /* Скругление */
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Тень */    }
+    .approveButton:hover {
+        background-color: #238701;
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3); /* Увеличение тени при наведении */
+    }
+}
+
+/* На мобильных устройствах кнопки идут внизу */
+@media (max-width: 768px) {
+    .executorCard {
+        align-items: center;
+        text-align: center;
+    }
+
+    .buttonsContainer {
+        flex-direction: column;
+        width: 80%;
+    }
+
+    .complaintButton, .approveButton {
+        width: 100%;
+    }
+
+    .verifiedBadge {
+        align-self: center;
+        margin-bottom: 5px;
+    }
+}
+.orderHeader {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 3px solid #67727e; /* Синяя линия */
+    margin-bottom: 12px;
+}
+

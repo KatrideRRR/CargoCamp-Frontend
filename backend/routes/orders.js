@@ -274,7 +274,7 @@ module.exports = (io) => {
             // Находим пользователей по ID
             const executors = await User.findAll({
                 where: { id: requestedExecutors },
-                attributes: ['id', 'username', 'rating', 'ratingCount'] // Выбираем нужные поля
+                attributes: ['id', 'username', 'rating', 'ratingCount', 'isVerified'] // Выбираем нужные поля
             });
             console.log('📡 Ответ сервера:', requestedExecutors);
 

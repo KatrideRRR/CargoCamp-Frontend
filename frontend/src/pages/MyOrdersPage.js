@@ -159,30 +159,34 @@ const MyOrdersPage = () => {
                                             <strong>Исполнители, запросившие заказ:</strong>
                                             <ul>
                                                 {order.requestedExecutors.map((executor) => (
-                                                    <li key={executor.id}>
-                                                        {executor.username} {executor.id} (Рейтинг: {executor.rating ? executor.rating.toFixed(1) : "—"} ⭐,
-                                                        Оценок: {executor.ratingCount || 0})
-                                                        <button
-                                                            onClick={() => navigate(`/complaints/${executor.id}`)}
-                                                            style={{
-                                                                backgroundColor: '#f44336',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                padding: '8px 16px',
-                                                                borderRadius: '5px',
-                                                                cursor: 'pointer',
-                                                                fontSize: '0.9em',
-                                                                transition: 'background-color 0.3s',
-                                                            }}
-                                                        >
-                                                            Жалобы
-                                                        </button>
+                                                    <li key={executor.id} className={styles.executorCard}>
+                                                        <div className={styles.executorInfo}>
+                                                            <p className={styles.executorName}>
+                                                                {executor.username} {executor.id} (Рейтинг: {executor.rating ? executor.rating.toFixed(1) : "—"} ⭐,
+                                                                Оценок: {executor.ratingCount || 0})
+                                                            </p>
 
-                                                        <button
-                                                            onClick={() => approveExecutor(order.id, executor.id)}
-                                                        >
-                                                            Одобрить
-                                                        </button>
+                                                            {executor.isVerified && (
+                                                                <span
+                                                                    className={styles.verifiedBadge}>✔ Верифицирован</span>
+                                                            )}
+                                                        </div>
+
+                                                        <div className={styles.buttonsContainer}>
+                                                            <button
+                                                                onClick={() => navigate(`/complaints/${executor.id}`)}
+                                                                className={styles.complaintButton}
+                                                            >
+                                                                Жалобы
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => approveExecutor(order.id, executor.id)}
+                                                                className={styles.approveButton}
+                                                            >
+                                                                Одобрить
+                                                            </button>
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>
