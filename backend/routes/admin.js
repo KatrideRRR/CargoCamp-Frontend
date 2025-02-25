@@ -1,6 +1,6 @@
 const express = require('express');
 const { authMiddleware, adminMiddleware } = require('../middlewares/adminMiddlewares');
-const { User, Order, Message } = require('../models');
+const { User, Order, Message, Category, Subcategory } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const NodeGeocoder = require("node-geocoder");
@@ -37,7 +37,6 @@ router.put('/users/:id/verify', async (req, res) => {
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
-
 
 // Получение документов пользователя (только для админов)
 router.get('/user-documents/:userId', authMiddleware, adminMiddleware, async (req, res) => {
@@ -251,7 +250,13 @@ router.get("/:orderId/messages", async (req, res) => {
 router.get('/orders/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const order = await Order.findOne({ where: { id } });
+        const order = await Order.findOne({
+            where: { id },
+            include: [
+                { model: Category, as: 'category' },
+                { model: Subcategory, as: 'subcategory' }
+            ]
+        } );
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
@@ -353,7 +358,6 @@ router.post("/create", authMiddleware, adminMiddleware, async (req, res) => {
             console.error("Ошибка при создании заказа админом:", error);
             res.status(500).json({ message: "Ошибка сервера" });
         }
-    }
-);
+    });
 
 module.exports = router;

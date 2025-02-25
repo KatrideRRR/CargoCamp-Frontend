@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import '../styles/MessagesPage.css';
 
 function MessagesPage() {
     const { orderId } = useParams(); // Получаем ID заказа из URL
@@ -14,21 +15,22 @@ function MessagesPage() {
     }, [orderId]); // Загрузка сообщений при изменении orderId
 
     return (
-        <div>
+        <div className="messages-container">
             <h2>Переписки по заказу #{orderId}</h2>
-            <ul>
+            <ul className="messages-list">
                 {messages.length > 0 ? (
                     messages.map(msg => (
-                        <li key={msg.id}>
+                        <li key={msg.id} className="message-item">
                             <strong>{msg.sender.username}: </strong> {msg.content}
                             <div><small>{new Date(msg.createdAt).toLocaleString()}</small></div>
                         </li>
                     ))
                 ) : (
-                    <p>Сообщения не найдены.</p>
+                    <p className="no-messages">Сообщения не найдены.</p>
                 )}
             </ul>
         </div>
+
     );
 }
 
