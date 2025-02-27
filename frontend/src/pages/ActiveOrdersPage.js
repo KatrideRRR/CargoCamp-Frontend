@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import '../styles/ActiveOrdersPage.css';
 import { useAuth } from '../utils/authContext';
 import io from 'socket.io-client';
+import { useMediaQuery } from 'react-responsive';
+import { FaPhone, FaComments, FaRoute, FaExclamationTriangle, FaCheck, FaTrash } from 'react-icons/fa';
 
 const socket = io('http://localhost:5000'); // Подключение к WebSocket
 
@@ -18,8 +20,7 @@ const ActiveOrdersPage = () => {
     const [showComplaintModal, setShowComplaintModal] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [complaintText, setComplaintText] = useState('');
-
-
+    const isMobile = useMediaQuery({ maxWidth: 768 });
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
@@ -180,75 +181,79 @@ const ActiveOrdersPage = () => {
                                     {order.photoUrl && (
                                         <img src={`http://localhost:5000${order.photoUrl}`} alt="Фото заказа"
                                              className="order-photo"/>)}
+
                                     <div className="action-buttons">
+
                                         <button className="call-button"
-                                                onClick={() => window.open(`tel:${order.phone}`)}>Позвонить
+                                                onClick={() => window.open(`tel:${order.phone}`)}>
+                                            {isMobile ? <FaPhone /> : "Позвонить"}
                                         </button>
                                         <button className="message-button"
-                                                onClick={() => navigate(`/messages/${order.id}`)}>Сообщение
+                                                onClick={() => navigate(`/messages/${order.id}`)}>
+                                            {isMobile ? <FaComments /> : "Сообщение"}
                                         </button>
-                                        <button className="route-button">Маршрут</button>
-
-
+                                        <button className="route-button">
+                                            {isMobile ? <FaRoute /> : "Маршрут"}
+                                        </button>
                                         <button className="complain-button"
                                                 onClick={() => handleComplaint(order.id)}>
-                                            Пожаловаться
+                                            {isMobile ? <FaExclamationTriangle /> : "Пожаловаться"}
                                         </button>
 
-                                        {/* Модальное окно для жалобы */}
-                                        {showComplaintModal && selectedOrderId === order.id && (
-                                            <div className="modal">
-                                                <h2>Напишите свою жалобу:</h2>
-                                                <textarea
-                                                    value={complaintText}
-                                                    onChange={(e) => setComplaintText(e.target.value)}
-                                                    rows="5"
-                                                    placeholder="Введите текст жалобы"
-                                                />
-                                                <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
-                                                <button onClick={() => setShowComplaintModal(false)}>Закрыть
-                                                </button>
-                                            </div>
-                                        )}
+
                                         {isCompletedByUser ? (
                                             isWaitingForOther ? (
                                                 <>
-                                                    <p>Ожидаем
-                                                        подтверждения {isCreator ? "исполнителя" : isExecutor ? "заказчика" : "второго участника"}</p>
                                                     <button className="remove-button"
                                                             onClick={() => handleRemoveOrder(order.id)}>
-                                                        Удалить из активных
+                                                        {isMobile ? <FaTrash /> : "Удалить"}
                                                     </button>
                                                 </>
                                             ) : null
                                         ) : (
                                             <button className="complete-button"
                                                     onClick={() => handleCompleteOrder(order.id)}>
-                                                Завершить
+                                                {isMobile ? <FaCheck /> : "Завершить"}
                                             </button>
                                         )}
-                                        {showRatingModal && selectedOrder?.id === order.id && (
-                                            <div className="modal">
-                                                <h2>Оцените участника</h2>
-                                                <div className="stars">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <span
-                                                            key={star}
-                                                            className={star <= rating ? "star selected" : "star"}
-                                                            onClick={() => setRating(star)}
-                                                        >
-                    ★
-                </span>
-                                                    ))}
-                                                </div>
-                                                <button onClick={submitRating} disabled={rating === 0}>
-                                                    Завершить заказ
-                                                </button>
-                                            </div>
-                                        )}
+
 
 
                                     </div>
+                                    {showRatingModal && selectedOrder?.id === order.id && (
+                                        <div className="modal">
+                                            <h2>Оцените участника</h2>
+                                            <div className="stars">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                        key={star}
+                                                        className={star <= rating ? "star selected" : "star"}
+                                                        onClick={() => setRating(star)}
+                                                    >
+                    ★
+                </span>
+                                                ))}
+                                            </div>
+                                            <button onClick={submitRating} disabled={rating === 0}>
+                                                Завершить заказ
+                                            </button>
+                                        </div>
+                                    )}
+                                    {/* Модальное окно для жалобы */}
+                                    {showComplaintModal && selectedOrderId === order.id && (
+                                        <div className="modal">
+                                            <h2>Напишите свою жалобу:</h2>
+                                            <textarea
+                                                value={complaintText}
+                                                onChange={(e) => setComplaintText(e.target.value)}
+                                                rows="5"
+                                                placeholder="Введите текст жалобы"
+                                            />
+                                            <button onClick={handleSubmitComplaint}>Отправить жалобу</button>
+                                            <button onClick={() => setShowComplaintModal(false)}>Закрыть
+                                            </button>
+                                        </div>
+                                    )}
                                 </li>
                             );
                         })}

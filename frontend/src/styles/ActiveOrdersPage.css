@@ -220,3 +220,46 @@
         width: 100%;
     }
 }
+@media (max-width: 768px) {
+    .orders-wrapper .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .orders-wrapper .action-buttons button {
+        width: 40px;
+        height: 40px;
+        padding: 5px;
+        font-size: 20px;
+        min-width: auto;
+    }
+
+    .orders-wrapper .action-buttons button svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+/* --- МОБИЛЬНАЯ ВЕРСИЯ: компактные кнопки в один ряд --- */
+@media (max-width: 480px) {
+    .orders-wrapper .action-buttons {
+        flex-direction: row;  /* Горизонтальное расположение кнопок */
+        flex-wrap: nowrap;
+        justify-content: space-between;
+    }
+
+    .orders-wrapper .action-buttons button {
+        flex: 1;
+        min-width: auto;
+        padding: 8px;
+        font-size: 0; /* Скрываем текст */
+        height: 40px; /* Уменьшаем высоту кнопок */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+}
+
